@@ -2,6 +2,8 @@
 
 A static React + Tailwind CSS documentation site for searchable ABAP templates and quick references.
 
+This is a personal project for learning and quickly reusing practical ABAP patterns.
+
 ## Run Locally
 
 ```bash
