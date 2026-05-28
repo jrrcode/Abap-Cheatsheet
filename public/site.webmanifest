@@ -1,0 +1,16 @@
+{
+  "name": "ABAP Cheatsheets",
+  "short_name": "ABAP",
+  "description": "Searchable ABAP templates and quick references.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f7f9fb",
+  "theme_color": "#1268ad",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
+    }
+  ]
+}

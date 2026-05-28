@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@layer components {
+  .icon-button {
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-ink-200 bg-white text-ink-700 transition hover:bg-ink-100 focus:outline-none focus:ring-2 focus:ring-sap-400 focus:ring-offset-2 dark:border-ink-700 dark:bg-ink-900 dark:text-ink-100 dark:hover:bg-ink-800 dark:focus:ring-offset-ink-950;
+  }
+
+  .form-control {
+    @apply w-full rounded-md border border-ink-200 bg-white px-3 py-2 text-sm text-ink-950 outline-none transition placeholder:text-ink-400 focus:border-sap-500 focus:ring-2 focus:ring-sap-200 dark:border-ink-700 dark:bg-ink-950 dark:text-white dark:placeholder:text-ink-500 dark:focus:border-sap-400 dark:focus:ring-sap-900;
+  }
+
+  .dark .site-header {
+    @apply border-ink-800 bg-ink-950/95 text-ink-50;
+  }
+
+  .dark .search-input {
+    @apply border-ink-700 bg-ink-900 text-white placeholder:text-ink-500;
+  }
+
+  .dark .search-input:focus {
+    @apply border-sap-400 bg-ink-900 ring-sap-900;
+  }
+
+  .dark .search-icon {
+    @apply text-ink-500;
+  }
+
+  .nav-button {
+    @apply flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-ink-600 transition hover:bg-ink-100 hover:text-ink-950 focus:outline-none focus:ring-2 focus:ring-sap-400 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-white;
+  }
+
+  .nav-button-active {
+    @apply bg-sap-50 text-sap-800 ring-1 ring-sap-200 dark:bg-sap-900/35 dark:text-sap-100 dark:ring-sap-800;
+  }
+
+  .tag-chip {
+    @apply inline-flex items-center rounded-md border border-ink-200 bg-white px-2.5 py-1 text-xs font-medium text-ink-700 transition hover:border-sap-300 hover:text-sap-800 dark:border-ink-700 dark:bg-ink-900 dark:text-ink-200 dark:hover:border-sap-700 dark:hover:text-sap-200;
+  }
+
+  .tag-chip-active {
+    @apply border-sap-500 bg-sap-50 text-sap-800 dark:border-sap-500 dark:bg-sap-900/45 dark:text-sap-100;
+  }
+
+  .code-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #7892a8 transparent;
+  }
+
+  .code-scrollbar::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  .code-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #7892a8;
+  }
+
+  .code-line:hover {
+    @apply bg-ink-100/70 dark:bg-ink-900/80;
+  }
+}
+
+.hljs {
+  background: transparent;
+  color: inherit;
+}
+
+.hljs-keyword,
+.hljs-built_in,
+.hljs-type {
+  color: #1d4ed8 !important;
+  font-weight: 700;
+}
+
+.dark .hljs-keyword,
+.dark .hljs-built_in,
+.dark .hljs-type {
+  color: #60a5fa !important;
+}
+
+.hljs-string,
+.hljs-template-variable {
+  color: #c2410c !important;
+}
+
+.dark .hljs-string,
+.dark .hljs-template-variable {
+  color: #fdba74 !important;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #516b81 !important;
+  font-style: italic;
+}
+
+.dark .hljs-comment,
+.dark .hljs-quote {
+  color: #7892a8 !important;
+}
+
+.hljs-number,
+.hljs-literal {
+  color: #047857 !important;
+}
+
+.dark .hljs-number,
+.dark .hljs-literal {
+  color: #6ee7b7 !important;
+}
+
+.hljs-title,
+.hljs-name,
+.hljs-section {
+  color: #4338ca !important;
+  font-weight: 700;
+}
+
+.dark .hljs-title,
+.dark .hljs-name,
+.dark .hljs-section {
+  color: #a5b4fc !important;
+}
