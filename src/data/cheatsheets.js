@@ -2094,4 +2094,279 @@ WRITE: / 'Total:', lv_total.`,
     ],
     relatedTopics: ['Quality Check', 'S/4HANA compatibility', 'messages', 'authorization checks'],
   },
+  {
+    id: 'select-distinct-unique-values',
+    title: 'SELECT DISTINCT Unique Values',
+    category: 'SELECT Statements',
+    subcategory: 'SELECT DISTINCT',
+    tags: ['Classic ABAP', 'Intermediate', 'Open SQL', 'Performance'],
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'SELECT DISTINCT is Open SQL syntax. Use it only when the distinctness is part of the business result, not as a quick fix for duplicate joins.',
+    difficulty: 'Intermediate',
+    explanation:
+      'Use SELECT DISTINCT when the result should contain only unique combinations of the selected columns.',
+    code: `TYPES: BEGIN OF ty_customer,
+         kunnr TYPE vbak-kunnr,
+       END OF ty_customer.
+
+DATA lt_customers TYPE STANDARD TABLE OF ty_customer.
+
+SELECT DISTINCT kunnr
+  FROM vbak
+  INTO TABLE lt_customers
+  WHERE erdat IN s_erdat
+    AND kunnr <> space.
+
+IF lt_customers IS INITIAL.
+  MESSAGE 'No customers found for the selected date range' TYPE 'S'.
+ENDIF.`,
+    notes: [
+      'DISTINCT applies to the complete selected row, not just one field when multiple fields are selected.',
+      'Prefer fixing an incorrect join condition over hiding duplicate rows with DISTINCT.',
+      'For internal table de-duplication, SORT plus DELETE ADJACENT DUPLICATES may be clearer after data is already in memory.',
+    ],
+    commonMistakes: [
+      'Selecting extra columns and expecting only one column to be unique.',
+      'Using DISTINCT to mask duplicate records caused by an incomplete join.',
+      'Forgetting that DISTINCT can add database work on large result sets.',
+    ],
+    relatedTopics: ['SELECT with WHERE', 'JOINs', 'DELETE ADJACENT DUPLICATES'],
+  },
+  {
+    id: 'select-up-to-one-row-order-by',
+    title: 'SELECT UP TO 1 ROWS With ORDER BY',
+    category: 'SELECT Statements',
+    subcategory: 'SELECT SINGLE',
+    tags: ['Classic ABAP', 'Intermediate', 'Open SQL', 'Performance'],
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'Use SELECT SINGLE for a fully specified unique key. Use UP TO 1 ROWS with ORDER BY when choosing one row from several possible matches.',
+    difficulty: 'Intermediate',
+    explanation:
+      'Use UP TO 1 ROWS with ORDER BY when the program needs the newest, oldest, highest, or otherwise deterministic first row.',
+    code: `DATA ls_order TYPE vbak.
+
+SELECT vbeln erdat auart kunnr
+  FROM vbak
+  INTO CORRESPONDING FIELDS OF ls_order
+  UP TO 1 ROWS
+  WHERE kunnr = p_kunnr
+  ORDER BY erdat DESCENDING vbeln DESCENDING.
+ENDSELECT.
+
+IF sy-subrc = 0.
+  WRITE: / 'Latest order:', ls_order-vbeln.
+ELSE.
+  MESSAGE 'No order found for customer' TYPE 'S'.
+ENDIF.`,
+    notes: [
+      'ORDER BY makes the selected first row deterministic for the fields specified.',
+      'SELECT SINGLE does not support ORDER BY, so it is not suitable when several rows may match.',
+      'For large tables, ensure the WHERE and ORDER BY fields are sensible for the data volume and indexes.',
+    ],
+    commonMistakes: [
+      'Using SELECT SINGLE with a partial key and assuming the same row will always be returned.',
+      'Forgetting ENDSELECT in classic SELECT ... UP TO 1 ROWS loop form.',
+      'Ordering large result sets without checking ST05 for database cost.',
+    ],
+    relatedTopics: ['SELECT SINGLE', 'ORDER BY', 'ST05'],
+  },
+  {
+    id: 'selection-screen-pushbutton-user-command',
+    title: 'Selection Screen Pushbutton',
+    category: 'User Interface / Selection Screens',
+    subcategory: 'Pushbuttons',
+    tags: ['Classic ABAP', 'Beginner', 'UI', 'Selection Screen'],
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'SELECTION-SCREEN PUSHBUTTON and USER-COMMAND are classic selection-screen features for executable reports.',
+    difficulty: 'Beginner',
+    explanation:
+      'Add a pushbutton to a report selection screen when the user needs an explicit helper action before execution.',
+    code: `TABLES sscrfields.
+
+DATA gv_help TYPE c LENGTH 25.
+
+SELECTION-SCREEN PUSHBUTTON /1(25) gv_help USER-COMMAND help.
+
+INITIALIZATION.
+  gv_help = 'Show input rules'.
+
+AT SELECTION-SCREEN.
+  IF sscrfields-ucomm = 'HELP'.
+    MESSAGE 'Enter company code and a restricted date range before running' TYPE 'I'.
+  ENDIF.`,
+    notes: [
+      'Declare TABLES SSCRFIELDS to read the function code triggered on the selection screen.',
+      'Keep pushbutton actions lightweight; heavy processing belongs after START-OF-SELECTION.',
+      'Use clear button text because selection screens are often used by business users.',
+    ],
+    commonMistakes: [
+      'Using a pushbutton for logic that should run when the report is executed.',
+      'Forgetting to set the button text during INITIALIZATION.',
+      'Not checking SSCRFIELDS-UCOMM in AT SELECTION-SCREEN.',
+    ],
+    relatedTopics: ['AT SELECTION-SCREEN', 'PARAMETERS', 'selection-screen validation'],
+  },
+  {
+    id: 'selection-screen-field-validation',
+    title: 'Field-Level Selection Screen Validation',
+    category: 'User Interface / Selection Screens',
+    subcategory: 'AT SELECTION-SCREEN',
+    tags: ['Classic ABAP', 'Beginner', 'UI', 'Selection Screen'],
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'AT SELECTION-SCREEN ON field is classic-compatible and useful for focused validation on a specific input.',
+    difficulty: 'Beginner',
+    explanation:
+      'Use field-level validation when one input field has its own rule and the cursor should return to that field after an error.',
+    code: `PARAMETERS:
+  p_bukrs TYPE bukrs OBLIGATORY,
+  p_days  TYPE i DEFAULT 30.
+
+AT SELECTION-SCREEN ON p_days.
+  IF p_days <= 0 OR p_days > 365.
+    MESSAGE 'Days must be between 1 and 365' TYPE 'E'.
+  ENDIF.
+
+AT SELECTION-SCREEN.
+  IF p_bukrs IS INITIAL.
+    MESSAGE 'Company code is required' TYPE 'E'.
+  ENDIF.`,
+    notes: [
+      'Use AT SELECTION-SCREEN ON field for field-specific checks.',
+      'Use the general AT SELECTION-SCREEN event for checks that compare multiple inputs.',
+      'Keep error messages actionable so the user knows exactly what to change.',
+    ],
+    commonMistakes: [
+      'Putting every validation in START-OF-SELECTION instead of stopping bad input earlier.',
+      'Using field-level validation for rules that depend on several fields.',
+      'Showing a generic error message that does not identify the invalid input.',
+    ],
+    relatedTopics: ['PARAMETERS', 'SELECT-OPTIONS', 'screen validation'],
+  },
+  {
+    id: 'internal-table-sort-stable',
+    title: 'SORT With Multiple Keys And STABLE',
+    category: 'Internal Tables',
+    subcategory: 'SORT',
+    tags: ['Classic ABAP', 'Beginner', 'Internal Tables', 'Performance'],
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'SORT is classic-compatible. STABLE is useful when equal sort keys should keep their previous relative order.',
+    difficulty: 'Beginner',
+    explanation:
+      'Sort standard internal tables explicitly by the fields that matter, especially before binary search or duplicate removal.',
+    code: `SORT lt_items BY bukrs ASCENDING
+                 matnr ASCENDING
+                 erdat DESCENDING.
+
+"Keep previous relative order for rows with equal sort keys.
+SORT lt_items STABLE BY bukrs matnr.`,
+    notes: [
+      'Explicit BY fields make sorting intent clearer than relying on the table key.',
+      'Use DESCENDING only for the fields that need reverse order.',
+      'Use STABLE when equal keys must preserve earlier ordering.',
+    ],
+    commonMistakes: [
+      'Using BINARY SEARCH after sorting by a different key sequence.',
+      'Assuming SORT is stable by default.',
+      'Sorting a table repeatedly inside a loop instead of sorting once before processing.',
+    ],
+    relatedTopics: ['READ TABLE', 'BINARY SEARCH', 'DELETE ADJACENT DUPLICATES'],
+  },
+  {
+    id: 'internal-table-delete-adjacent-duplicates',
+    title: 'DELETE ADJACENT DUPLICATES',
+    category: 'Internal Tables',
+    subcategory: 'DELETE',
+    tags: ['Classic ABAP', 'Beginner', 'Internal Tables', 'Performance'],
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'DELETE ADJACENT DUPLICATES is classic-compatible. Rows must be adjacent, so sorting by the comparison fields is normally required first.',
+    difficulty: 'Beginner',
+    explanation:
+      'Remove duplicate neighboring rows from an internal table after sorting by the fields that define equality.',
+    code: `SORT lt_items BY bukrs matnr.
+
+DELETE ADJACENT DUPLICATES FROM lt_items
+  COMPARING bukrs matnr.
+
+LOOP AT lt_items INTO DATA(ls_item).
+  WRITE: / ls_item-bukrs, ls_item-matnr.
+ENDLOOP.`,
+    notes: [
+      'The statement removes adjacent duplicates, not duplicates scattered throughout an unsorted table.',
+      'COMPARING controls which fields define a duplicate.',
+      'Sort by the same fields used in COMPARING before deleting duplicates.',
+    ],
+    commonMistakes: [
+      'Forgetting to SORT before DELETE ADJACENT DUPLICATES.',
+      'Using COMPARING ALL FIELDS when only a business key should define duplicates.',
+      'Removing duplicates before preserving the row that should win.',
+    ],
+    relatedTopics: ['SORT', 'SELECT DISTINCT', 'Internal Tables'],
+  },
+  {
+    id: 'internal-table-line-exists',
+    title: 'line_exists For Existence Checks',
+    category: 'Internal Tables',
+    subcategory: 'line_exists',
+    tags: ['Modern ABAP 7.40+', 'Beginner', 'Internal Tables'],
+    compatibility: ['Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'line_exists uses table expressions introduced with modern ABAP syntax. Use READ TABLE ... TRANSPORTING NO FIELDS on older ECC releases.',
+    difficulty: 'Beginner',
+    explanation:
+      'Use line_exists when you only need to know whether an internal table contains a row for a key.',
+    code: `IF line_exists( lt_items[ matnr = p_matnr ] ).
+  MESSAGE 'Material exists in the result table' TYPE 'S'.
+ELSE.
+  MESSAGE 'Material was not selected' TYPE 'S'.
+ENDIF.`,
+    notes: [
+      'line_exists returns a boolean-style result and does not return the row contents.',
+      'Use a suitable table key for repeated existence checks on large tables.',
+      'Use READ TABLE or table expressions with assignment when you also need the row data.',
+    ],
+    commonMistakes: [
+      'Expecting sy-subrc or sy-tabix to be updated like READ TABLE.',
+      'Using line_exists repeatedly on a large standard table without considering a key.',
+      'Using it on older systems that do not support table expressions.',
+    ],
+    relatedTopics: ['READ TABLE', 'HASHED TABLE', 'Modern ABAP 7.40+'],
+  },
+  {
+    id: 'internal-table-filter-expression',
+    title: 'FILTER For Internal Tables',
+    category: 'Internal Tables',
+    subcategory: 'FILTER',
+    tags: ['Modern ABAP 7.40+', 'Intermediate', 'Internal Tables'],
+    compatibility: ['Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'FILTER is modern ABAP syntax and is best used where the target system and team standards support expression-oriented code.',
+    difficulty: 'Intermediate',
+    explanation:
+      'Use FILTER to derive a smaller internal table from an existing table when the filtering condition is simple and readable.',
+    code: `TYPES ty_item_tab TYPE STANDARD TABLE OF ty_item WITH EMPTY KEY.
+
+DATA lt_open_items TYPE ty_item_tab.
+
+lt_open_items = FILTER #(
+  lt_items
+  WHERE status = 'OPEN'
+    AND quantity > 0 ).`,
+    notes: [
+      'FILTER can make simple table filtering concise and expressive.',
+      'For complex logic, a LOOP with clear IF conditions may be easier to debug.',
+      'For very large tables, consider keys and measure performance instead of assuming expression syntax is faster.',
+    ],
+    commonMistakes: [
+      'Using FILTER where a database WHERE condition would avoid reading unnecessary rows in the first place.',
+      'Making one expression so dense that beginners cannot maintain it.',
+      'Forgetting that release compatibility matters for modern expression syntax.',
+    ],
+    relatedTopics: ['LOOP AT', 'VALUE syntax', 'Modern ABAP 7.40+'],
+  },
 ];

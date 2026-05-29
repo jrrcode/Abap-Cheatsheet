@@ -162,11 +162,21 @@ textarea {
     color: #0f172a !important;
   }
 
+  #root,
+  .min-h-screen,
+  .flex,
+  main {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
   aside,
-  button,
   input,
   .site-header,
-  .print-hidden {
+  .print-hidden,
+  .icon-button,
+  .cheatsheet-card-details button,
+  .tag-chip[role='button'] {
     display: none !important;
   }
 
@@ -183,6 +193,7 @@ textarea {
     break-inside: avoid;
     border: 1px solid #cbd5e1 !important;
     margin-bottom: 1rem;
+    page-break-inside: avoid;
   }
 
   .cheatsheet-card-details {
