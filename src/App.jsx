@@ -5,12 +5,14 @@ import {
   Lightbulb,
   Menu,
   Moon,
+  StickyNote,
   Star,
   Sun,
   X,
 } from 'lucide-react';
 import { cheatsheets } from './data/cheatsheets';
 import { categories } from './data/categories';
+import { snippets } from './data/snippets';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useFavorites } from './hooks/useFavorites';
 import { filterCheatsheets, getAllTags } from './utils/search';
@@ -22,9 +24,11 @@ import CheatSheetCard from './components/CheatSheetCard';
 import EmptyState from './components/EmptyState';
 import AddTemplateGuide from './sections/AddTemplateGuide';
 import TipsAndTricks from './sections/TipsAndTricks';
+import MySnippets from './sections/MySnippets';
 
 const views = [
   { id: 'overview', label: 'Overview', icon: BookOpen },
+  { id: 'snippets', label: 'My Snippets', icon: StickyNote },
   { id: 'tips', label: 'Tips & Tricks', icon: Lightbulb },
   { id: 'favorites', label: 'Favorites', icon: Star },
   { id: 'contribute', label: 'Add Template Guide', icon: Github },
@@ -38,6 +42,10 @@ const pageMeta = {
   tips: {
     eyebrow: 'Practical guidance',
     title: 'Tips & Tricks',
+  },
+  snippets: {
+    eyebrow: 'Personal work notes',
+    title: 'My Snippets',
   },
   favorites: {
     eyebrow: 'Saved quick references',
@@ -198,13 +206,15 @@ function App() {
                 <HeaderStat label="Sample templates" value={cheatsheets.length} />
                 <HeaderStat label="Prepared categories" value={categories.length} />
                 <HeaderStat label="Tag filters" value={tags.length} />
-                <HeaderStat label="Saved favorites" value={favorites.length} />
+                <HeaderStat label="My snippets" value={snippets.length} />
               </section>
             ) : null}
 
             {activeView === 'contribute' ? <AddTemplateGuide /> : null}
 
             {activeView === 'tips' ? <TipsAndTricks /> : null}
+
+            {activeView === 'snippets' ? <MySnippets query={query} onClearSearch={() => setQuery('')} /> : null}
 
             {showingOverviewHome ? (
               <>
