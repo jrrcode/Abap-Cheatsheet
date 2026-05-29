@@ -171,43 +171,47 @@ function App() {
         <main className="min-w-0 flex-1">
           <header className="site-header sticky top-0 z-30 border-b border-ink-200/80 bg-white/90 backdrop-blur dark:border-ink-800 dark:bg-ink-950/95">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-8">
-              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 sm:gap-3">
-                <button
-                  aria-label="Open navigation"
-                  className="icon-button lg:hidden"
-                  onClick={() => setMobileNavOpen(true)}
-                  type="button"
-                >
-                  <Menu size={20} />
-                </button>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-sap-700 dark:text-sap-300 sm:text-xs sm:tracking-[0.12em]">
-                    {showingCategoryPage ? 'Category templates' : currentPage.eyebrow}
-                  </p>
-                  <h1 className="truncate text-lg font-semibold text-sap-900 dark:text-sap-100 sm:text-2xl">
-                    {showingCategoryPage ? activeCategory : currentPage.title}
-                  </h1>
-                </div>
-                <button
-                  aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                  className="icon-button"
-                  onClick={() => setDarkMode(!darkMode)}
-                  type="button"
-                  title={darkMode ? 'Light mode' : 'Dark mode'}
-                >
-                  {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
-                {showPrint ? (
+              <div className="flex items-center justify-between gap-2 sm:gap-3">
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                   <button
-                    aria-label="Print cheatsheets"
-                    className="icon-button hidden print:hidden sm:inline-flex"
-                    onClick={() => window.print()}
+                    aria-label="Open navigation"
+                    className="icon-button lg:hidden"
+                    onClick={() => setMobileNavOpen(true)}
                     type="button"
-                    title="Print cheatsheets"
                   >
-                    <Printer size={18} />
+                    <Menu size={20} />
                   </button>
-                ) : null}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-sap-700 dark:text-sap-300 sm:text-xs sm:tracking-[0.12em]">
+                      {showingCategoryPage ? 'Category templates' : currentPage.eyebrow}
+                    </p>
+                    <h1 className="truncate text-lg font-semibold text-sap-900 dark:text-sap-100 sm:text-2xl">
+                      {showingCategoryPage ? activeCategory : currentPage.title}
+                    </h1>
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  {showPrint ? (
+                    <button
+                      aria-label="Print cheatsheets"
+                      className="icon-button hidden print:hidden sm:inline-flex"
+                      onClick={() => window.print()}
+                      type="button"
+                      title="Print cheatsheets"
+                    >
+                      <Printer size={18} />
+                    </button>
+                  ) : null}
+                  <button
+                    aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                    className="icon-button"
+                    onClick={() => setDarkMode(!darkMode)}
+                    type="button"
+                    title={darkMode ? 'Light mode' : 'Dark mode'}
+                  >
+                    {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+                  </button>
+                </div>
               </div>
               {showSearch ? <SearchBar query={query} onQueryChange={setQuery} /> : null}
             </div>
