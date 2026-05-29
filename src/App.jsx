@@ -5,7 +5,6 @@ import {
   Lightbulb,
   Menu,
   Moon,
-  Sparkles,
   Star,
   Sun,
   X,
@@ -129,8 +128,8 @@ function App() {
             <aside className="relative h-full w-[min(88vw,22rem)] overflow-y-auto bg-white p-4 shadow-soft dark:bg-ink-900">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-sap-600 text-white">
-                    <Sparkles size={20} />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-sap-600 text-sm font-bold tracking-wide text-white">
+                    SAP
                   </div>
                   <div>
                     <p className="text-sm font-semibold">ABAP Cheatsheets</p>
@@ -175,7 +174,7 @@ function App() {
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
                     {showingCategoryPage ? 'Category templates' : currentPage.eyebrow}
                   </p>
-                  <h1 className="truncate text-xl font-semibold text-ink-950 dark:text-white sm:text-2xl">
+                  <h1 className="truncate text-xl font-semibold text-sap-900 dark:text-sap-100 sm:text-2xl">
                     {showingCategoryPage ? activeCategory : currentPage.title}
                   </h1>
                 </div>
@@ -289,7 +288,7 @@ function App() {
                 </div>
 
                 {visibleCheatsheets.length ? (
-                  <section className="grid gap-4 xl:grid-cols-2">
+                  <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {visibleCheatsheets.map((sheet) => (
                       <CheatSheetCard
                         favorite={favorites.includes(sheet.id)}

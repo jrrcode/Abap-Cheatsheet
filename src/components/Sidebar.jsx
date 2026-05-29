@@ -1,5 +1,3 @@
-import { Sparkles } from 'lucide-react';
-
 function Sidebar({
   activeView,
   activeCategory,
@@ -13,8 +11,8 @@ function Sidebar({
     <>
       {!mobile ? (
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-sap-600 text-white">
-            <Sparkles size={21} />
+          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-sap-600 text-sm font-bold tracking-wide text-white">
+            SAP
           </div>
           <div>
             <p className="font-semibold text-ink-950 dark:text-white">ABAP Cheatsheets</p>
