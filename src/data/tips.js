@@ -20,6 +20,36 @@ export const tips = [
     ],
   },
   {
+    title: 'Read Only The Columns You Need',
+    category: 'Open SQL',
+    summary: 'Fetching unnecessary columns increases database traffic, memory use, and ALV/report preparation time.',
+    checklist: [
+      'Prefer an explicit field list over SELECT * for large tables and productive reports.',
+      'Keep technical fields out of the result set unless the next step really needs them.',
+      'Review old reports after requirements change because unused fields often stay behind.',
+    ],
+  },
+  {
+    title: 'Use WHERE Like A Performance Feature',
+    category: 'Open SQL',
+    summary: 'A selective WHERE clause is often the biggest difference between a fast report and a risky one.',
+    checklist: [
+      'Filter by key fields or indexed fields where the business requirement allows it.',
+      'Avoid allowing large tables to run with completely open selections.',
+      'Trace slow queries with ST05 before guessing which condition is the problem.',
+    ],
+  },
+  {
+    title: 'Check Indexes Before Blaming ABAP',
+    category: 'Performance',
+    summary: 'Slow SELECT statements may be caused by missing or unsuitable database indexes, not only ABAP logic.',
+    checklist: [
+      'Use ST05 to see the expensive SQL statement and access path.',
+      'Compare the WHERE fields with existing table indexes in SE11 or ADT.',
+      'Do not create custom indexes casually; confirm volume, selectivity, and functional ownership first.',
+    ],
+  },
+  {
     title: 'Before Transporting A Report',
     category: 'Quality Check',
     summary: 'Do a small pre-flight review so avoidable issues do not reach QA or production.',
@@ -48,6 +78,36 @@ export const tips = [
       'Use SAT for ABAP runtime hotspots.',
       'Use ST05 for expensive SQL statements.',
       'Watch for SELECT inside LOOP, missing keys, and overly broad selections.',
+    ],
+  },
+  {
+    title: 'Measure Before You Tune',
+    category: 'Performance',
+    summary: 'Performance work should start with evidence from SAP tools, not guesses from reading the code.',
+    checklist: [
+      'Use SAT when you need ABAP runtime hotspots and call hierarchy details.',
+      'Use ST05 when database time looks suspicious or a SELECT is called too often.',
+      'Compare traces using realistic data volumes, not only tiny test selections.',
+    ],
+  },
+  {
+    title: 'Reduce Data Transfer Between Layers',
+    category: 'Performance',
+    summary: 'Moving too much data between the database, application server, and UI slows otherwise simple programs.',
+    checklist: [
+      'Apply filtering and aggregation as close to the database as your release and design allow.',
+      'Send only the fields the UI, ALV, interface, or next calculation needs.',
+      'For very large jobs, process in packages instead of loading everything into memory at once.',
+    ],
+  },
+  {
+    title: 'Use Buffers With Care',
+    category: 'Performance',
+    summary: 'Buffered customizing or reference data can avoid repeated reads, but stale or unsuitable buffering causes confusion.',
+    checklist: [
+      'Consider buffering for stable, frequently read reference data.',
+      'Avoid buffering assumptions for transactional tables that change often.',
+      'Document local cache refresh rules when you keep lookup data in internal tables.',
     ],
   },
   {
@@ -91,6 +151,16 @@ export const tips = [
     ],
   },
   {
+    title: 'Replace Nested Loops With Keyed Access',
+    category: 'Performance',
+    summary: 'Nested loops over large internal tables can grow quickly from acceptable to painful.',
+    checklist: [
+      'Sort once and use READ TABLE ... BINARY SEARCH when classic syntax is required.',
+      'Use SORTED or HASHED tables when repeated key lookups are the main operation.',
+      'Move matching logic into SQL joins when the database can do the work more efficiently.',
+    ],
+  },
+  {
     title: 'Choose The Right Internal Table Type',
     category: 'Performance',
     summary: 'The table type should match how the program reads and writes the data.',
@@ -98,6 +168,26 @@ export const tips = [
       'Use STANDARD TABLE for simple append-and-loop scenarios.',
       'Use SORTED TABLE for key reads plus ordered processing.',
       'Use HASHED TABLE for fast unique full-key lookup.',
+    ],
+  },
+  {
+    title: 'Keep Internal Tables Purpose-Sized',
+    category: 'Internal Tables',
+    summary: 'Internal tables are fast, but oversized tables still consume memory and make loops slower.',
+    checklist: [
+      'Store only rows and fields that are needed for the current processing step.',
+      'Clear temporary tables after large package processing when they are no longer needed.',
+      'Avoid keeping multiple full copies of the same dataset unless there is a clear reason.',
+    ],
+  },
+  {
+    title: 'Binary Search Needs Sorted Data',
+    category: 'Internal Tables',
+    summary: 'READ TABLE ... BINARY SEARCH is only reliable when the table is sorted by the same key sequence.',
+    checklist: [
+      'SORT the table by the exact fields used for the binary search.',
+      'Prefer SORTED TABLE when the table should always remain sorted by key.',
+      'If the key is unique and lookups dominate, consider HASHED TABLE instead.',
     ],
   },
   {
@@ -118,6 +208,26 @@ export const tips = [
       'Do not swallow exceptions silently.',
       'Log technical details for background jobs and interfaces.',
       'Use business-friendly messages on screens and detailed logs for support.',
+    ],
+  },
+  {
+    title: 'Keep TRY CATCH Outside Hot Loops',
+    category: 'Error Handling',
+    summary: 'Exception handling is important, but wrapping tiny repeated operations can add avoidable overhead.',
+    checklist: [
+      'Validate known risky inputs before the loop when possible.',
+      'Catch expected business issues at a meaningful process boundary.',
+      'Inside loops, collect row-level errors and report them after processing.',
+    ],
+  },
+  {
+    title: 'Do Not MESSAGE In Every Iteration',
+    category: 'Error Handling',
+    summary: 'Messages inside large loops can slow processing and overwhelm users or job logs.',
+    checklist: [
+      'Collect warnings and errors in an internal table during processing.',
+      'Show a summary with drill-down details after the loop finishes.',
+      'For background jobs, write useful application log entries instead of repeated screen messages.',
     ],
   },
   {
@@ -151,6 +261,36 @@ export const tips = [
     ],
   },
   {
+    title: 'Precalculate Values Used In Loops',
+    category: 'Performance',
+    summary: 'Repeated calculations inside large loops waste runtime when the result does not change per row.',
+    checklist: [
+      'Move constants, conversion factors, and date boundaries outside the loop.',
+      'Avoid repeated function calls in a loop when one lookup table can hold the results.',
+      'Keep the loop body focused on row-specific logic only.',
+    ],
+  },
+  {
+    title: 'Build Long Strings Deliberately',
+    category: 'Performance',
+    summary: 'Repeated string concatenation in big loops can become expensive and hard to read.',
+    checklist: [
+      'Collect lines in an internal table when building large text output.',
+      'Use string templates for readable single-line formatting on supported releases.',
+      'Avoid growing the same string thousands of times unless the volume is known to be small.',
+    ],
+  },
+  {
+    title: 'Package Large Background Work',
+    category: 'Batch Processing',
+    summary: 'Large data jobs are easier to control when processed in smaller chunks.',
+    checklist: [
+      'Read and process data in packages when full-table processing would be too large.',
+      'Commit only at controlled boundaries for update programs, never randomly inside helpers.',
+      'Record progress and failed keys so the job can be analyzed or restarted safely.',
+    ],
+  },
+  {
     title: 'Think In SAP LUWs',
     category: 'Transactions',
     summary: 'Commit and rollback behavior affects data consistency across BAPIs, update tasks, and custom saves.',
@@ -158,6 +298,26 @@ export const tips = [
       'Avoid COMMIT WORK deep inside low-level helper methods.',
       'Use BAPI_TRANSACTION_COMMIT after BAPIs that require it.',
       'Use COMMIT WORK AND WAIT only when follow-up logic depends on the completed update.',
+    ],
+  },
+  {
+    title: 'Optimize Fiori And Web Dynpro Round Trips',
+    category: 'UI Performance',
+    summary: 'For SAP web UIs, user experience depends heavily on how much data and how many requests each screen needs.',
+    checklist: [
+      'Load only the data needed for the current view or user action.',
+      'Avoid expensive backend calls during simple rendering events.',
+      'Keep view logic separate from data retrieval so performance issues are easier to trace.',
+    ],
+  },
+  {
+    title: 'Lazy Load Secondary Details',
+    category: 'UI Performance',
+    summary: 'Not every tab, section, or detail table has to be loaded before the user asks for it.',
+    checklist: [
+      'Load header or summary data first, then fetch details on demand.',
+      'Use lazy loading especially for logs, attachments, long histories, and secondary item lists.',
+      'Make loading states clear so users understand that data is still being fetched.',
     ],
   },
 ];
