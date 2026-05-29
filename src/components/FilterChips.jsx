@@ -10,7 +10,7 @@ function FilterChips({
   const hasFilters = activeCategory !== 'All' || activeTags.length > 0;
 
   return (
-    <section className="mb-6 rounded-md border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900">
+    <section className="print-hidden mb-6 rounded-md border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-ink-950 dark:text-white">Filters</h2>

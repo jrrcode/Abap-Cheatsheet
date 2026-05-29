@@ -6,7 +6,7 @@ function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <article className="self-start rounded-md border border-ink-200 bg-white shadow-sm transition hover:border-sap-200 hover:shadow-md dark:border-ink-800 dark:bg-ink-900 dark:hover:border-sap-800">
+    <article className="cheatsheet-card self-start rounded-md border border-ink-200 bg-white shadow-sm transition hover:border-sap-200 hover:shadow-md dark:border-ink-800 dark:bg-ink-900 dark:hover:border-sap-800">
       <div
         aria-expanded={expanded}
         className={`w-full p-5 text-left ${expanded ? 'border-b border-ink-200 dark:border-ink-800' : ''}`}
@@ -79,8 +79,7 @@ function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
         </div>
       </div>
 
-      {expanded ? (
-      <div className="flex flex-1 flex-col gap-4 p-5">
+      <div className={`cheatsheet-card-details flex flex-col gap-4 p-5 ${expanded ? '' : 'hidden'}`}>
         <p className="text-sm leading-6 text-ink-600 dark:text-ink-300">{sheet.explanation}</p>
         <div className="flex flex-wrap gap-2 text-xs">
           <span className="rounded-md bg-ink-100 px-2.5 py-1 font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
@@ -133,7 +132,6 @@ function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
             </div>
         </div>
       </div>
-      ) : null}
     </article>
   );
 }

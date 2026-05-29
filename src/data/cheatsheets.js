@@ -417,10 +417,14 @@ ENDTRY.`,
     subcategory: 'CALL FUNCTION DESTINATION',
     tags: ['Classic ABAP', 'Intermediate', 'RFC', 'Integration'],
     compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'CALL FUNCTION DESTINATION is classic-compatible. Inline MESSAGE DATA declarations require newer syntax, so this template uses explicit variables.',
     difficulty: 'Intermediate',
     explanation:
       'Use DESTINATION to call a remote-enabled function module in another SAP system. Always handle communication and system failures.',
-    code: `DATA lv_destination TYPE rfcdest VALUE 'PRDCLNT100'.
+    code: `DATA lv_destination TYPE rfcdest VALUE 'YOUR_RFC_DESTINATION'.
+DATA lv_comm_msg    TYPE string.
+DATA lv_sys_msg     TYPE string.
 DATA lt_return      TYPE TABLE OF bapiret2.
 
 CALL FUNCTION 'Z_REMOTE_STATUS_READ'
@@ -430,8 +434,8 @@ CALL FUNCTION 'Z_REMOTE_STATUS_READ'
   TABLES
     et_return               = lt_return
   EXCEPTIONS
-    communication_failure   = 1 MESSAGE DATA(lv_comm_msg)
-    system_failure          = 2 MESSAGE DATA(lv_sys_msg)
+    communication_failure   = 1 MESSAGE lv_comm_msg
+    system_failure          = 2 MESSAGE lv_sys_msg
     OTHERS                  = 3.
 
 CASE sy-subrc.
@@ -447,12 +451,14 @@ ENDCASE.`,
     notes: [
       'The called function module must be remote-enabled in SE37.',
       'The destination must exist and be authorized in SM59.',
-      'MESSAGE DATA(...) on RFC exceptions requires a sufficiently modern ABAP release; declare message variables separately on older systems.',
+      'Use RFC_PING or SM59 connection tests for a quick connectivity check before debugging application logic.',
+      'Keep destination names configurable when the same code moves through DEV, QA, and production.',
     ],
     commonMistakes: [
       'Calling a normal function module remotely when it is not remote-enabled.',
       'Ignoring COMMUNICATION_FAILURE and SYSTEM_FAILURE.',
       'Hardcoding destinations without considering landscape and transport strategy.',
+      'Treating a successful ping as proof that the business function module will also succeed.',
     ],
     relatedTopics: ['SM59', 'remote-enabled function modules', 'error handling'],
   },
@@ -663,14 +669,21 @@ START-OF-SELECTION.
       'The selection option declaration is classic-compatible. Inline Open SQL host variables in the SELECT need ABAP 7.40+.',
     difficulty: 'Beginner',
     explanation:
-      'Use SELECT-OPTIONS for flexible range entry, then validate broad or empty selections before running expensive database logic.',
+      'Use SELECT-OPTIONS for flexible range entry, safe defaults, and validation that prevents expensive reports from running wide open.',
     code: `REPORT z_demo_so_validation.
 
 TABLES vbak.
 
 SELECT-OPTIONS:
   s_vbeln FOR vbak-vbeln,
-  s_erdat FOR vbak-erdat DEFAULT sy-datum.
+  s_erdat FOR vbak-erdat.
+
+INITIALIZATION.
+  s_erdat-sign   = 'I'.
+  s_erdat-option = 'BT'.
+  s_erdat-low    = sy-datum - 30.
+  s_erdat-high   = sy-datum.
+  APPEND s_erdat.
 
 AT SELECTION-SCREEN.
   IF s_vbeln[] IS INITIAL AND s_erdat[] IS INITIAL.
@@ -687,13 +700,15 @@ START-OF-SELECTION.
   WRITE: / 'Orders found:', lines( lt_orders ).`,
     notes: [
       'Use the internal table body syntax s_field[] when checking whether a selection option has entries.',
-      'Defaults help users but should not replace validation.',
+      'Default ranges help users and reduce accidental full-table reads, but they should not replace validation.',
       'Date restrictions are a practical safety net for large business tables.',
+      'Replace the demo date field with the real business date field for the report.',
     ],
     commonMistakes: [
       'Assuming an empty SELECT-OPTIONS table means select nothing; in Open SQL it usually means no restriction.',
       'Not protecting reports from accidentally broad selections.',
       'Forgetting that users can enter exclusions and patterns in selection options.',
+      'Using sy-datum as a placeholder but forgetting to align the type with the selected table field.',
     ],
     relatedTopics: ['ranges', 'SELECT with WHERE', 'selection-screen validation'],
   },
@@ -708,13 +723,14 @@ START-OF-SELECTION.
       'This version avoids COND and inline declarations, so it is friendlier for older ECC systems.',
     difficulty: 'Intermediate',
     explanation:
-      'Hide or show selection-screen fields based on a processing mode while staying close to classic ABAP syntax.',
+      'Hide, show, enable, or disable selection-screen fields based on a user choice while staying close to classic ABAP syntax.',
     code: `REPORT z_demo_modif_classic.
 
 PARAMETERS:
   p_disp RADIOBUTTON GROUP act DEFAULT 'X' USER-COMMAND act,
   p_upd  RADIOBUTTON GROUP act,
-  p_file TYPE rlgrap-filename MODIF ID upd.
+  p_file TYPE rlgrap-filename MODIF ID upd,
+  p_test AS CHECKBOX DEFAULT 'X' MODIF ID upd.
 
 AT SELECTION-SCREEN OUTPUT.
   LOOP AT SCREEN.
@@ -732,11 +748,13 @@ AT SELECTION-SCREEN OUTPUT.
       'Use USER-COMMAND so changing the radio button refreshes the screen immediately.',
       'SCREEN-ACTIVE hides or shows the field; SCREEN-INPUT controls editability.',
       'MODIF ID is limited to three characters and is seen in SCREEN-GROUP1.',
+      'Checkboxes and radio buttons can drive the same MODIF ID logic as long as validation matches the visible fields.',
     ],
     commonMistakes: [
       'Forgetting MODIFY SCREEN inside the LOOP AT SCREEN.',
       'Checking screen-group1 with the wrong uppercase value.',
       'Using MODIF ID logic to replace authorization or business validation.',
+      'Making a field optional visually but still validating it when it is hidden.',
     ],
     relatedTopics: ['AT SELECTION-SCREEN OUTPUT', 'dynamic selection screen', 'radio buttons'],
   },
@@ -964,6 +982,8 @@ cl_salv_table=>factory(
     t_table      = lt_output ).
 
 lo_columns = lo_alv->get_columns( ).
+lo_columns->set_optimize( abap_true ).
+
 lo_column  = lo_columns->get_column( 'MANDT' ).
 lo_column->set_visible( abap_false ).
 
@@ -972,11 +992,13 @@ lo_alv->display( ).`,
       'Use the internal field name when retrieving a SALV column.',
       'Column names are usually uppercase in ALV metadata.',
       'Wrap GET_COLUMN in TRY/CATCH when the field may not exist.',
+      'Keeping a technical key in the output table can still help sorting, drilldown, or support even when it is hidden.',
     ],
     commonMistakes: [
       'Using the displayed column text instead of the field name.',
       'Trying to hide a field that is not part of the ALV output table.',
       'Assuming SALV is ideal for editable ALV requirements.',
+      'Hiding all key fields and making it hard to reconcile the ALV output with source data.',
     ],
     relatedTopics: ['CL_SALV_TABLE', 'column settings', 'TRY/CATCH'],
   },
@@ -2040,5 +2062,36 @@ WRITE: / 'Total:', lv_total.`,
       'Assuming all decimal rounding rules are the same across business processes.',
     ],
     relatedTopics: ['DATA declarations', 'Currency fields', 'Quantities'],
+  },
+  {
+    id: 'transport-preflight-checklist',
+    title: 'Transport Preflight Checklist',
+    category: 'Other ABAP Topics',
+    subcategory: 'Transport Notes',
+    tags: ['Classic ABAP', 'Beginner', 'Transport', 'Quality Check'],
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes:
+      'This is a release-independent review checklist for ABAP development objects. Transport tooling and approvals vary by SAP landscape.',
+    difficulty: 'Beginner',
+    explanation:
+      'Use this checklist before releasing a transport that contains ABAP reports, classes, function modules, text elements, or related DDIC changes.',
+    code: `" Transport preflight notes:
+" 1. Syntax check changed programs, includes, classes, and function groups.
+" 2. Remove temporary BREAK-POINT, WRITE, and test-only messages.
+" 3. Run the main success path and at least one empty-result or error path.
+" 4. Confirm text elements, message classes, selection texts, and GUI statuses are included.
+" 5. Check dependent DDIC objects, roles, variants, and customizing transports.
+" 6. Attach or record test evidence according to the team release process.`,
+    notes: [
+      'Check whether a separate customizing request is needed for configuration, variants, number ranges, or roles.',
+      'For urgent fixes, record what was tested and what risk remains.',
+      'Release dependent transports in the right order so inactive or missing objects do not reach QA.',
+    ],
+    commonMistakes: [
+      'Transporting code without required DDIC objects, text elements, or message classes.',
+      'Leaving developer-only breakpoints or debug output in productive code.',
+      'Forgetting that roles, variants, and customizing may live in separate requests.',
+    ],
+    relatedTopics: ['Quality Check', 'S/4HANA compatibility', 'messages', 'authorization checks'],
   },
 ];

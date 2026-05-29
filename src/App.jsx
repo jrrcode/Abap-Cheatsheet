@@ -1,18 +1,18 @@
 import { useMemo, useState } from 'react';
 import {
+  ArchiveRestore,
   BookOpen,
   Github,
   Lightbulb,
   Menu,
   Moon,
-  StickyNote,
+  Printer,
   Star,
   Sun,
   X,
 } from 'lucide-react';
 import { cheatsheets } from './data/cheatsheets';
 import { categories } from './data/categories';
-import { snippets } from './data/snippets';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useFavorites } from './hooks/useFavorites';
 import { filterCheatsheets, getAllTags } from './utils/search';
@@ -24,13 +24,13 @@ import CheatSheetCard from './components/CheatSheetCard';
 import EmptyState from './components/EmptyState';
 import AddTemplateGuide from './sections/AddTemplateGuide';
 import TipsAndTricks from './sections/TipsAndTricks';
-import MySnippets from './sections/MySnippets';
+import BackupRestore from './sections/BackupRestore';
 
 const views = [
   { id: 'overview', label: 'Overview', icon: BookOpen },
-  { id: 'snippets', label: 'My Snippets', icon: StickyNote },
   { id: 'tips', label: 'Tips & Tricks', icon: Lightbulb },
   { id: 'favorites', label: 'Favorites', icon: Star },
+  { id: 'backup', label: 'Backup & Restore', icon: ArchiveRestore },
   { id: 'contribute', label: 'Add Template Guide', icon: Github },
 ];
 
@@ -43,13 +43,13 @@ const pageMeta = {
     eyebrow: 'Practical guidance',
     title: 'Tips & Tricks',
   },
-  snippets: {
-    eyebrow: 'Personal work notes',
-    title: 'My Snippets',
-  },
   favorites: {
     eyebrow: 'Saved quick references',
     title: 'Favorites',
+  },
+  backup: {
+    eyebrow: 'Local data tools',
+    title: 'Backup & Restore',
   },
   contribute: {
     eyebrow: 'Content editing guide',
@@ -64,7 +64,7 @@ function App() {
   const [activeTags, setActiveTags] = useState([]);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [darkMode, setDarkMode] = useDarkMode();
-  const [favorites, toggleFavorite] = useFavorites();
+  const [favorites, toggleFavorite, setFavorites] = useFavorites();
 
   const tags = useMemo(() => getAllTags(cheatsheets), []);
 
@@ -83,6 +83,8 @@ function App() {
   const currentPage = pageMeta[activeView] ?? pageMeta.overview;
   const showingCategoryPage = activeView === 'overview' && activeCategory !== 'All';
   const showingOverviewHome = activeView === 'overview' && activeCategory === 'All';
+  const showSearch = activeView === 'overview' || activeView === 'favorites';
+  const showPrint = activeView === 'overview' || activeView === 'favorites';
 
   const handleViewChange = (view) => {
     setActiveView(view);
@@ -195,18 +197,29 @@ function App() {
                 >
                   {darkMode ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
+                {showPrint ? (
+                  <button
+                    aria-label="Print cheatsheets"
+                    className="icon-button print:hidden"
+                    onClick={() => window.print()}
+                    type="button"
+                    title="Print cheatsheets"
+                  >
+                    <Printer size={18} />
+                  </button>
+                ) : null}
               </div>
-              {activeView !== 'tips' ? <SearchBar query={query} onQueryChange={setQuery} /> : null}
+              {showSearch ? <SearchBar query={query} onQueryChange={setQuery} /> : null}
             </div>
           </header>
 
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
             {showingOverviewHome ? (
-              <section className="mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <section className="print-hidden mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                 <HeaderStat label="Sample templates" value={cheatsheets.length} />
                 <HeaderStat label="Prepared categories" value={categories.length} />
                 <HeaderStat label="Tag filters" value={tags.length} />
-                <HeaderStat label="My snippets" value={snippets.length} />
+                <HeaderStat label="Saved favorites" value={favorites.length} />
               </section>
             ) : null}
 
@@ -214,7 +227,14 @@ function App() {
 
             {activeView === 'tips' ? <TipsAndTricks /> : null}
 
-            {activeView === 'snippets' ? <MySnippets query={query} onClearSearch={() => setQuery('')} /> : null}
+            {activeView === 'backup' ? (
+              <BackupRestore
+                darkMode={darkMode}
+                favorites={favorites}
+                onRestoreFavorites={setFavorites}
+                onRestoreTheme={setDarkMode}
+              />
+            ) : null}
 
             {showingOverviewHome ? (
               <>

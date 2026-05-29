@@ -151,3 +151,61 @@ textarea {
 .dark .hljs-section {
   color: #a5b4fc !important;
 }
+
+@media print {
+  :root {
+    color-scheme: light !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  aside,
+  button,
+  input,
+  .site-header,
+  .print-hidden {
+    display: none !important;
+  }
+
+  main,
+  section,
+  article,
+  div {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+  }
+
+  .cheatsheet-card {
+    break-inside: avoid;
+    border: 1px solid #cbd5e1 !important;
+    margin-bottom: 1rem;
+  }
+
+  .cheatsheet-card-details {
+    display: flex !important;
+  }
+
+  .tag-chip {
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+  }
+
+  .code-scrollbar {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  pre,
+  code {
+    white-space: pre-wrap !important;
+    color: #0f172a !important;
+  }
+
+  .code-line {
+    break-inside: avoid;
+  }
+}
