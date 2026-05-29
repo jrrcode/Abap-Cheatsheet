@@ -9,7 +9,7 @@ function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
     <article className="cheatsheet-card self-start rounded-md border border-ink-200 bg-white shadow-sm transition hover:border-sap-200 hover:shadow-md dark:border-ink-800 dark:bg-ink-900 dark:hover:border-sap-800">
       <div
         aria-expanded={expanded}
-        className={`w-full p-5 text-left ${expanded ? 'border-b border-ink-200 dark:border-ink-800' : ''}`}
+        className={`w-full p-4 text-left sm:p-5 ${expanded ? 'border-b border-ink-200 dark:border-ink-800' : ''}`}
         onClick={() => setExpanded((current) => !current)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
@@ -22,11 +22,13 @@ function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-sap-700 dark:text-sap-300 sm:text-xs sm:tracking-[0.12em]">
               {sheet.category}
             </p>
             <p className="mt-1 text-xs font-medium text-ink-500 dark:text-ink-400">{sheet.subcategory}</p>
-            <h3 className="mt-2 text-lg font-semibold text-sap-900 dark:text-sap-100">{sheet.title}</h3>
+            <h3 className="mt-2 text-base font-semibold leading-6 text-sap-900 dark:text-sap-100 sm:text-lg">
+              {sheet.title}
+            </h3>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <span
@@ -79,7 +81,7 @@ function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
         </div>
       </div>
 
-      <div className={`cheatsheet-card-details flex flex-col gap-4 p-5 ${expanded ? '' : 'hidden'}`}>
+      <div className={`cheatsheet-card-details flex flex-col gap-4 p-4 sm:p-5 ${expanded ? '' : 'hidden'}`}>
         <p className="text-sm leading-6 text-ink-600 dark:text-ink-300">{sheet.explanation}</p>
         <div className="flex flex-wrap gap-2 text-xs">
           <span className="rounded-md bg-ink-100 px-2.5 py-1 font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
@@ -100,7 +102,7 @@ function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
           </p>
         ) : null}
         <CodeBlock code={sheet.code} compatibility={sheet.compatibility} difficulty={sheet.difficulty} />
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <div>
             <h4 className="text-sm font-semibold text-ink-950 dark:text-white">Notes</h4>
             <ul className="mt-2 space-y-2 text-sm leading-6 text-ink-600 dark:text-ink-300">

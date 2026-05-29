@@ -24,7 +24,7 @@ function TipsAndTricks() {
 
   return (
     <section>
-      <div className="mb-5 rounded-md border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900">
+      <div className="mb-5 rounded-md border border-ink-200 bg-white p-3 dark:border-ink-800 dark:bg-ink-900 sm:p-4">
         <div className="mb-3">
           <h2 className="text-sm font-semibold text-ink-950 dark:text-white">Tip Categories</h2>
           <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
@@ -56,7 +56,7 @@ function TipsAndTricks() {
             >
               <button
                 aria-expanded={expanded}
-                className={`w-full p-5 text-left ${expanded ? 'border-b border-ink-200 dark:border-ink-800' : ''}`}
+                className={`w-full p-4 text-left sm:p-5 ${expanded ? 'border-b border-ink-200 dark:border-ink-800' : ''}`}
                 onClick={() => toggleTip(tip.title)}
                 type="button"
               >
@@ -65,7 +65,9 @@ function TipsAndTricks() {
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
                       {tip.category}
                     </p>
-                    <h2 className="mt-2 text-lg font-semibold text-sap-900 dark:text-sap-100">{tip.title}</h2>
+                    <h2 className="mt-2 text-base font-semibold leading-6 text-sap-900 dark:text-sap-100 sm:text-lg">
+                      {tip.title}
+                    </h2>
                   </div>
                   <ChevronDown
                     className={`mt-1 shrink-0 text-ink-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
@@ -75,7 +77,7 @@ function TipsAndTricks() {
               </button>
 
               {expanded ? (
-                <div className="p-5">
+                <div className="p-4 sm:p-5">
                   <p className="text-sm leading-6 text-ink-600 dark:text-ink-300">{tip.summary}</p>
                   <ul className="mt-4 space-y-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
                     {tip.checklist.map((item) => (

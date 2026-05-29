@@ -79,7 +79,7 @@ function CodeBlock({ code, compatibility = [], difficulty }) {
           ))}
         </div>
         <button
-          className="inline-flex w-fit items-center gap-2 rounded-md px-2 py-1 font-semibold text-ink-100 hover:bg-white/10"
+          className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md px-3 py-2 font-semibold text-ink-100 hover:bg-white/10 sm:w-fit"
           onClick={copyCode}
           type="button"
         >
@@ -87,16 +87,16 @@ function CodeBlock({ code, compatibility = [], difficulty }) {
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      <div className="code-scrollbar max-h-[34rem] overflow-auto bg-white dark:bg-ink-950">
-        <pre className="min-w-max p-0 font-mono text-[0.84rem] leading-6 text-ink-800 dark:text-ink-100">
+      <div className="code-scrollbar max-h-[28rem] overflow-auto bg-white dark:bg-ink-950 sm:max-h-[34rem]">
+        <pre className="min-w-max p-0 font-mono text-[0.78rem] leading-6 text-ink-800 dark:text-ink-100 sm:text-[0.84rem]">
           <code className="hljs language-abap block py-4">
             {highlightedLines.map((line, index) => (
-              <span className="code-line grid grid-cols-[3.25rem_minmax(0,1fr)]" key={`${index}-${line}`}>
-                <span className="select-none border-r border-ink-200 px-3 text-right text-ink-400 dark:border-ink-800 dark:text-ink-600">
+              <span className="code-line grid grid-cols-[2.5rem_minmax(0,1fr)] sm:grid-cols-[3.25rem_minmax(0,1fr)]" key={`${index}-${line}`}>
+                <span className="select-none border-r border-ink-200 px-2 text-right text-ink-400 dark:border-ink-800 dark:text-ink-600 sm:px-3">
                   {index + 1}
                 </span>
                 <span
-                  className="px-4"
+                  className="px-3 sm:px-4"
                   dangerouslySetInnerHTML={{
                     __html: line.length > 0 ? line : '&nbsp;',
                   }}

@@ -112,12 +112,12 @@ function AddTemplateGuide() {
 
   return (
     <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.85fr)]">
-      <div className="rounded-md border border-ink-200 bg-white p-5 shadow-sm dark:border-ink-800 dark:bg-ink-900">
+      <div className="rounded-md border border-ink-200 bg-white p-4 shadow-sm dark:border-ink-800 dark:bg-ink-900 sm:p-5">
         <div className="mb-5">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
             Template Builder
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-ink-950 dark:text-white">Create a new cheatsheet entry</h2>
+          <h2 className="mt-2 text-xl font-semibold text-ink-950 dark:text-white sm:text-2xl">Create a new cheatsheet entry</h2>
           <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
             Fill the form, copy the generated object, then paste it into the array in{' '}
             <span className="font-mono">src/data/cheatsheets.js</span>.
@@ -256,9 +256,9 @@ function AddTemplateGuide() {
           </Field>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-5 grid gap-3 sm:flex sm:flex-wrap">
           <button
-            className="inline-flex items-center gap-2 rounded-md bg-sap-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sap-800 dark:bg-sap-500 dark:hover:bg-sap-400"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-sap-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sap-800 dark:bg-sap-500 dark:hover:bg-sap-400"
             onClick={copyTemplate}
             type="button"
           >
@@ -266,7 +266,7 @@ function AddTemplateGuide() {
             {copied ? 'Copied' : 'Copy template object'}
           </button>
           <button
-            className="inline-flex items-center gap-2 rounded-md border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
             onClick={() => setForm(starterTemplate)}
             type="button"
           >
@@ -276,11 +276,11 @@ function AddTemplateGuide() {
         </div>
       </div>
 
-      <aside className="rounded-md border border-ink-200 bg-ink-950 shadow-sm dark:border-ink-800">
+      <aside className="min-w-0 rounded-md border border-ink-200 bg-ink-950 shadow-sm dark:border-ink-800">
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-sm text-ink-100">
           <span className="font-semibold">Generated object</span>
           <button
-            className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-semibold hover:bg-white/10"
+            className="inline-flex min-h-9 items-center gap-2 rounded-md px-2 py-1 text-xs font-semibold hover:bg-white/10"
             onClick={copyTemplate}
             type="button"
           >
@@ -288,7 +288,7 @@ function AddTemplateGuide() {
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
-        <pre className="code-scrollbar max-h-[64rem] overflow-auto p-4 text-sm leading-6 text-ink-100">
+        <pre className="code-scrollbar max-h-[28rem] overflow-auto p-3 text-xs leading-6 text-ink-100 sm:max-h-[64rem] sm:p-4 sm:text-sm">
           <code>{generatedTemplate}</code>
         </pre>
       </aside>

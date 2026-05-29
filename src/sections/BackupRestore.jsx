@@ -68,12 +68,12 @@ function BackupRestore({ darkMode, favorites, onRestoreFavorites, onRestoreTheme
   };
 
   return (
-    <section className="max-w-3xl rounded-md border border-ink-200 bg-white p-5 shadow-sm dark:border-ink-800 dark:bg-ink-900">
+    <section className="max-w-3xl rounded-md border border-ink-200 bg-white p-4 shadow-sm dark:border-ink-800 dark:bg-ink-900 sm:p-5">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
           Local browser data
         </p>
-        <h2 className="mt-2 text-xl font-semibold text-sap-900 dark:text-sap-100">Backup & Restore</h2>
+        <h2 className="mt-2 text-lg font-semibold text-sap-900 dark:text-sap-100 sm:text-xl">Backup & Restore</h2>
         <p className="mt-3 text-sm leading-6 text-ink-600 dark:text-ink-300">
           Export or restore only local settings stored by this site. No code notes, credentials, SAP system names, or
           server data are included.
@@ -82,7 +82,7 @@ function BackupRestore({ darkMode, favorites, onRestoreFavorites, onRestoreTheme
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-sap-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sap-800"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-sap-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sap-800"
           onClick={exportBackup}
           type="button"
         >
@@ -90,7 +90,7 @@ function BackupRestore({ darkMode, favorites, onRestoreFavorites, onRestoreTheme
           Export JSON
         </button>
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-md border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-800 transition hover:bg-ink-100 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-100 dark:hover:bg-ink-800"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-800 transition hover:bg-ink-100 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-100 dark:hover:bg-ink-800"
           onClick={() => fileInputRef.current?.click()}
           type="button"
         >

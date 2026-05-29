@@ -10,15 +10,15 @@ function FilterChips({
   const hasFilters = activeCategory !== 'All' || activeTags.length > 0;
 
   return (
-    <section className="print-hidden mb-6 rounded-md border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
+    <section className="print-hidden mb-5 rounded-md border border-ink-200 bg-white p-3 dark:border-ink-800 dark:bg-ink-900 sm:mb-6 sm:p-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-sm font-semibold text-ink-950 dark:text-white">Filters</h2>
           <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">Combine one category with any number of tags.</p>
         </div>
         {hasFilters ? (
           <button
-            className="rounded-md border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+            className="min-h-10 w-full rounded-md border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800 sm:w-auto"
             onClick={onClear}
             type="button"
           >
@@ -28,7 +28,7 @@ function FilterChips({
       </div>
 
       <div className="space-y-3">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex flex-wrap gap-2">
           <button
             className={`tag-chip shrink-0 ${activeCategory === 'All' ? 'tag-chip-active' : ''}`}
             onClick={() => onCategoryChange('All')}

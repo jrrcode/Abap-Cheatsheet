@@ -135,8 +135,8 @@ function App() {
               onClick={() => setMobileNavOpen(false)}
               type="button"
             />
-            <aside className="relative h-full w-[min(88vw,22rem)] overflow-y-auto bg-white p-4 shadow-soft dark:bg-ink-900">
-              <div className="mb-4 flex items-center justify-between">
+            <aside className="relative h-full w-[min(92vw,22rem)] overflow-y-auto bg-white p-4 pb-8 shadow-soft dark:bg-ink-900">
+              <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-4 flex items-center justify-between bg-white px-4 py-4 dark:bg-ink-900">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-md bg-sap-600 text-sm font-bold tracking-wide text-white">
                     SAP
@@ -170,8 +170,8 @@ function App() {
 
         <main className="min-w-0 flex-1">
           <header className="site-header sticky top-0 z-30 border-b border-ink-200/80 bg-white/90 backdrop-blur dark:border-ink-800 dark:bg-ink-950/95">
-            <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between gap-3">
+            <div className="mx-auto flex max-w-7xl flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-8">
+              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 sm:gap-3">
                 <button
                   aria-label="Open navigation"
                   className="icon-button lg:hidden"
@@ -181,10 +181,10 @@ function App() {
                   <Menu size={20} />
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-sap-700 dark:text-sap-300 sm:text-xs sm:tracking-[0.12em]">
                     {showingCategoryPage ? 'Category templates' : currentPage.eyebrow}
                   </p>
-                  <h1 className="truncate text-xl font-semibold text-sap-900 dark:text-sap-100 sm:text-2xl">
+                  <h1 className="truncate text-lg font-semibold text-sap-900 dark:text-sap-100 sm:text-2xl">
                     {showingCategoryPage ? activeCategory : currentPage.title}
                   </h1>
                 </div>
@@ -200,7 +200,7 @@ function App() {
                 {showPrint ? (
                   <button
                     aria-label="Print cheatsheets"
-                    className="icon-button print:hidden"
+                    className="icon-button hidden print:hidden sm:inline-flex"
                     onClick={() => window.print()}
                     type="button"
                     title="Print cheatsheets"
@@ -213,7 +213,7 @@ function App() {
             </div>
           </header>
 
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
             {showingOverviewHome ? (
               <section className="print-hidden mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                 <HeaderStat label="Sample templates" value={cheatsheets.length} />
@@ -252,7 +252,7 @@ function App() {
 
             {activeView === 'overview' || activeView === 'favorites' ? (
               <>
-                <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
                   <p className="text-sm text-ink-600 dark:text-ink-300">
                     {activeCategory === 'All' ? 'Showing' : `Showing ${activeCategory}`}{' '}
                     <span className="font-semibold text-ink-950 dark:text-white">{visibleCheatsheets.length}</span>{' '}

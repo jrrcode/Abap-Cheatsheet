@@ -2,7 +2,7 @@ import { Search, X } from 'lucide-react';
 
 function SearchBar({ query, onQueryChange }) {
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <Search
         aria-hidden="true"
         className="search-icon pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
@@ -10,7 +10,7 @@ function SearchBar({ query, onQueryChange }) {
       />
       <input
         aria-label="Search cheatsheets"
-        className="search-input h-12 w-full rounded-md border border-ink-200 bg-ink-50 pl-10 pr-11 text-sm text-ink-950 outline-none transition placeholder:text-ink-400 focus:border-sap-500 focus:bg-white focus:ring-2 focus:ring-sap-200 dark:border-ink-700 dark:bg-ink-900 dark:text-white dark:placeholder:text-ink-500 dark:focus:border-sap-400 dark:focus:bg-ink-900 dark:focus:ring-sap-900"
+        className="search-input h-12 w-full rounded-md border border-ink-200 bg-ink-50 pl-10 pr-11 text-base text-ink-950 outline-none transition placeholder:text-ink-400 focus:border-sap-500 focus:bg-white focus:ring-2 focus:ring-sap-200 dark:border-ink-700 dark:bg-ink-900 dark:text-white dark:placeholder:text-ink-500 dark:focus:border-sap-400 dark:focus:bg-ink-900 dark:focus:ring-sap-900 sm:text-sm"
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder="Search by keyword, category, tag, compatibility, or ABAP syntax..."
         type="search"
