@@ -66,38 +66,3 @@ Copy an existing object in `src/data/cheatsheets.js`, give it a unique `id`, cho
 }
 ```
 
-## Deploy
-
-Recommended option: Vercel.
-
-### Vercel
-
-1. Push this project to a GitHub repository.
-2. Go to Vercel and choose **Add New Project**.
-3. Import the repository.
-4. Use these settings:
-   - Framework Preset: `Vite`
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-5. Deploy.
-
-This repo includes `vercel.json`, so Vercel can infer the build command, output directory, and SPA fallback.
-
-### GitHub Pages
-
-The Vite config uses `base: './'`, so built assets work when hosted under a GitHub Pages repository subpath.
-
-Simple manual flow:
-
-```bash
-npm.cmd run build
-```
-
-Then publish the `dist/` folder using your preferred GitHub Pages workflow or action.
-
-### Preview Production Build Locally
-
-```bash
-npm.cmd run build
-npm.cmd run preview
-```
