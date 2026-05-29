@@ -45,13 +45,13 @@ function TipsAndTricks() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid items-start gap-4 md:grid-cols-2">
         {visibleTips.map((tip) => {
           const expanded = expandedTips.includes(tip.title);
 
           return (
             <article
-              className={`rounded-md border border-ink-200 bg-white shadow-sm transition hover:border-sap-200 hover:shadow-md dark:border-ink-800 dark:bg-ink-900 dark:hover:border-sap-800 ${expanded ? 'xl:col-span-2' : ''}`}
+              className="self-start rounded-md border border-ink-200 bg-white shadow-sm transition hover:border-sap-200 hover:shadow-md dark:border-ink-800 dark:bg-ink-900 dark:hover:border-sap-800"
               key={tip.title}
             >
               <button

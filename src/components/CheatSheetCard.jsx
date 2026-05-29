@@ -6,9 +6,7 @@ function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <article
-      className={`flex flex-col rounded-md border border-ink-200 bg-white shadow-sm transition hover:border-sap-200 hover:shadow-md dark:border-ink-800 dark:bg-ink-900 dark:hover:border-sap-800 ${expanded ? 'xl:col-span-2' : ''}`}
-    >
+    <article className="self-start rounded-md border border-ink-200 bg-white shadow-sm transition hover:border-sap-200 hover:shadow-md dark:border-ink-800 dark:bg-ink-900 dark:hover:border-sap-800">
       <div
         aria-expanded={expanded}
         className={`w-full p-5 text-left ${expanded ? 'border-b border-ink-200 dark:border-ink-800' : ''}`}

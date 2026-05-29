@@ -194,68 +194,11 @@ function App() {
 
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
             {showingOverviewHome ? (
-              <section className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <section className="mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                 <HeaderStat label="Sample templates" value={cheatsheets.length} />
                 <HeaderStat label="Prepared categories" value={categories.length} />
                 <HeaderStat label="Tag filters" value={tags.length} />
                 <HeaderStat label="Saved favorites" value={favorites.length} />
-              </section>
-            ) : null}
-
-            {showingOverviewHome ? (
-              <section className="mb-8 rounded-md border border-ink-200 bg-white shadow-sm dark:border-ink-800 dark:bg-ink-900">
-                <div className="grid gap-0 lg:grid-cols-[1.35fr_0.65fr]">
-                  <div>
-                    <div className="border-b border-ink-200 p-6 dark:border-ink-800">
-                      <p className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
-                        Practical ABAP reference
-                      </p>
-                      <h2 className="max-w-3xl text-3xl font-semibold tracking-tight text-ink-950 dark:text-white">
-                        Find a proven ABAP pattern, copy it, and adapt it to your report or integration.
-                      </h2>
-                      <p className="mt-4 max-w-3xl text-base leading-7 text-ink-600 dark:text-ink-300">
-                        Use this library as a working notebook for common ABAP tasks: selection screens, Open SQL,
-                        internal tables, ALV reports, RFC/BAPI integration, OOP structure, error handling, and
-                        S/4HANA compatibility checks.
-                      </p>
-                    </div>
-
-                    <div className="grid gap-0 divide-y divide-ink-200 dark:divide-ink-800 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                      <div className="p-5">
-                        <p className="text-sm font-semibold text-ink-950 dark:text-white">Start with input</p>
-                        <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
-                          Use PARAMETERS, SELECT-OPTIONS, and MODIF ID templates for report screens.
-                        </p>
-                      </div>
-                      <div className="p-5">
-                        <p className="text-sm font-semibold text-ink-950 dark:text-white">Read data safely</p>
-                        <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
-                          Compare SELECT, JOIN, FOR ALL ENTRIES, and table key patterns before coding.
-                        </p>
-                      </div>
-                      <div className="p-5">
-                        <p className="text-sm font-semibold text-ink-950 dark:text-white">Ship maintainable reports</p>
-                        <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
-                          Add ALV, messages, exception handling, authorization checks, and logging patterns.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-ink-200 bg-ink-50 p-6 dark:border-ink-800 dark:bg-ink-950 lg:border-l lg:border-t-0">
-                    <h3 className="text-sm font-semibold text-ink-950 dark:text-white">Quick Filters</h3>
-                    <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
-                      Jump into the most common working modes.
-                    </p>
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA', 'Beginner', 'Open SQL', 'ALV'].map((tag) => (
-                        <button className="tag-chip" key={tag} onClick={() => toggleTag(tag)} type="button">
-                          {tag}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               </section>
             ) : null}
 
@@ -288,7 +231,7 @@ function App() {
                 </div>
 
                 {visibleCheatsheets.length ? (
-                  <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <section className="grid items-start gap-4 md:grid-cols-2">
                     {visibleCheatsheets.map((sheet) => (
                       <CheatSheetCard
                         favorite={favorites.includes(sheet.id)}
