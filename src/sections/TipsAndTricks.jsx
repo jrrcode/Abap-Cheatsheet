@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MoreVertical, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { MoreVertical, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { tips as initialTips } from '../data/tips';
 
 const storageKey = 'abap-cheatsheets-user-tips';
-const migrationKey = 'abap-cheatsheets-built-in-tips-v3';
+const migrationKey = 'abap-cheatsheets-built-in-tips-v4';
 
 function loadTips() {
   if (typeof window === 'undefined') {
@@ -45,6 +45,7 @@ function TipsAndTricks() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingTipId, setEditingTipId] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [tipQuery, setTipQuery] = useState('');
   const [addForm, setAddForm] = useState({
     title: '',
     summary: '',
@@ -66,10 +67,20 @@ function TipsAndTricks() {
     return () => window.removeEventListener('abap-cheatsheets-tips-restored', refreshTips);
   }, []);
 
-  const sortedTips = useMemo(
-    () => [...tips].sort((a, b) => a.title.localeCompare(b.title)),
-    [tips],
-  );
+  const visibleTips = useMemo(() => {
+    const normalizedQuery = tipQuery.trim().toLowerCase();
+
+    return tips
+      .filter((tip) => {
+        if (!normalizedQuery) {
+          return true;
+        }
+
+        const searchableText = [tip.title, tip.summary, ...(tip.checklist ?? [])].join(' ').toLowerCase();
+        return searchableText.includes(normalizedQuery);
+      })
+      .sort((a, b) => a.title.localeCompare(b.title));
+  }, [tips, tipQuery]);
 
   const closeAddModal = () => {
     setAddForm({ title: '', summary: '', checklist: '' });
@@ -163,6 +174,31 @@ function TipsAndTricks() {
         </button>
       </div>
 
+      <div className="relative">
+        <Search
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 dark:text-ink-500"
+          size={18}
+        />
+        <input
+          aria-label="Search tips and tricks"
+          className="form-control min-h-12 pl-10 pr-11"
+          onChange={(event) => setTipQuery(event.target.value)}
+          placeholder="Search tips and tricks..."
+          value={tipQuery}
+        />
+        {tipQuery ? (
+          <button
+            aria-label="Clear tips search"
+            className="absolute right-2 top-1/2 inline-flex min-h-9 min-w-9 -translate-y-1/2 items-center justify-center rounded-md text-ink-500 hover:bg-ink-100 hover:text-ink-800 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-white"
+            onClick={() => setTipQuery('')}
+            type="button"
+          >
+            <X size={16} />
+          </button>
+        ) : null}
+      </div>
+
       {addModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/60 p-3 sm:items-center sm:p-6">
           <button
@@ -254,8 +290,8 @@ function TipsAndTricks() {
       ) : null}
 
       <div className="grid items-start gap-4">
-        {sortedTips.length ? (
-          sortedTips.map((tip) => {
+        {visibleTips.length ? (
+          visibleTips.map((tip) => {
             const isEditing = editingTipId === tip.id;
 
             return (
@@ -381,10 +417,23 @@ function TipsAndTricks() {
           })
         ) : (
           <section className="rounded-md border border-dashed border-ink-300 bg-white p-8 text-center dark:border-ink-700 dark:bg-ink-900">
-            <h2 className="text-lg font-semibold text-ink-950 dark:text-white">No tips yet</h2>
+            <h2 className="text-lg font-semibold text-ink-950 dark:text-white">
+              {tipQuery ? 'No tips match your search' : 'No tips yet'}
+            </h2>
             <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-ink-600 dark:text-ink-300">
-              Add your own ABAP reminders, useful notes, and best practices here.
+              {tipQuery
+                ? 'Try a different keyword or clear the tips search.'
+                : 'Add your own ABAP reminders, useful notes, and best practices here.'}
             </p>
+            {tipQuery ? (
+              <button
+                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+                onClick={() => setTipQuery('')}
+                type="button"
+              >
+                Clear search
+              </button>
+            ) : null}
           </section>
         )}
       </div>

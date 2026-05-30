@@ -2887,8 +2887,8 @@ CALL FUNCTION 'CONVERSION_EXIT_ALPHA_OUTPUT'
   {
     id: 'include-statement',
     title: 'INCLUDE Statement',
-    category: 'Includes',
-    subcategory: 'Classic Program Structure',
+    category: 'Basics',
+    subcategory: 'Includes',
     compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
     compatibilityNotes: 'INCLUDE is classic-compatible and common in older reports and module pools.',
     difficulty: 'Beginner',
@@ -2910,136 +2910,6 @@ INCLUDE z_demo_i01. "PAI modules`,
       'Creating too much hidden dependency through global data.',
     ],
     relatedTopics: ['Module Pool', 'FORM / PERFORM', 'Legacy ABAP'],
-  },
-  {
-    id: 'standard-users-tables',
-    title: 'Common User Tables: USR02, USR21, ADRP',
-    category: 'SAP Standard Tables',
-    subcategory: 'Users',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'Table availability and authorization depend on system and release. Do not update standard tables directly.',
-    difficulty: 'Intermediate',
-    explanation: 'Use these tables for read-only user identity analysis when standard APIs are not available.',
-    code: `SELECT bname gltgb ustyp
-  FROM usr02
-  INTO TABLE @DATA(lt_users)
-  WHERE bname IN @s_bname.
-
-SELECT bname persnumber
-  FROM usr21
-  INTO TABLE @DATA(lt_user_persons)
-  WHERE bname IN @s_bname.
-
-SELECT persnumber name_first name_last
-  FROM adrp
-  INTO TABLE @DATA(lt_names)
-  FOR ALL ENTRIES IN @lt_user_persons
-  WHERE persnumber = @lt_user_persons-persnumber.`,
-    notes: [
-      'USR02 stores user master logon-related data.',
-      'USR21 links user IDs to person/address numbers.',
-      'ADRP stores person name data.',
-    ],
-    commonMistakes: [
-      'Updating standard SAP tables directly.',
-      'Ignoring authorizations and privacy requirements.',
-      'Using FOR ALL ENTRIES without an empty-table guard.',
-    ],
-    relatedTopics: ['Open SQL', 'Authorization', 'FOR ALL ENTRIES'],
-  },
-  {
-    id: 'standard-ddic-tables',
-    title: 'Common DDIC Tables: DD02L, DD03L, DD04L',
-    category: 'SAP Standard Tables',
-    subcategory: 'DDIC',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'DDIC metadata tables are common, but use SE11/DDIC APIs when they are more appropriate.',
-    difficulty: 'Intermediate',
-    explanation: 'Use DDIC metadata tables for read-only repository analysis.',
-    code: `SELECT tabname tabclass
-  FROM dd02l
-  INTO TABLE @DATA(lt_tables)
-  WHERE tabname IN @s_tabname.
-
-SELECT tabname fieldname rollname keyflag
-  FROM dd03l
-  INTO TABLE @DATA(lt_fields)
-  WHERE tabname IN @s_tabname.
-
-SELECT rollname domname datatype leng
-  FROM dd04l
-  INTO TABLE @DATA(lt_data_elements)
-  WHERE rollname IN @s_rollname.`,
-    notes: [
-      'DD02L contains table metadata.',
-      'DD03L contains table field metadata.',
-      'DD04L contains data element metadata.',
-    ],
-    commonMistakes: [
-      'Assuming metadata meanings without checking SE11.',
-      'Updating DDIC metadata tables directly.',
-      'Reading inactive/generated states without understanding context.',
-    ],
-    relatedTopics: ['SE11', 'DDIC Object Types', 'Search Techniques'],
-  },
-  {
-    id: 'standard-repository-tables',
-    title: 'Repository Tables: TADIR and TRDIR',
-    category: 'SAP Standard Tables',
-    subcategory: 'Repository',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'TADIR and TRDIR are common repository tables. Interpret object ownership and generated entries carefully.',
-    difficulty: 'Intermediate',
-    explanation: 'Use repository tables for read-only object discovery when repository tools are not enough.',
-    code: `SELECT pgmid object obj_name devclass srcsystem
-  FROM tadir
-  INTO TABLE @DATA(lt_objects)
-  WHERE obj_name IN @s_object.
-
-SELECT name subc cnam unam udat
-  FROM trdir
-  INTO TABLE @DATA(lt_programs)
-  WHERE name IN @s_prog.`,
-    notes: [
-      'TADIR is the object directory.',
-      'TRDIR contains ABAP program directory data.',
-      'Use SE03/SE80/SE84 for normal repository analysis first.',
-    ],
-    commonMistakes: [
-      'Updating repository tables directly.',
-      'Confusing object type names.',
-      'Ignoring original system and package ownership.',
-    ],
-    relatedTopics: ['SE84', 'Includes', 'Enhancements'],
-  },
-  {
-    id: 'revtrac-empty-rt-check',
-    title: 'Rev-Trac Empty RT Check Pattern',
-    category: 'Rev-Trac',
-    subcategory: 'RT Analysis',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'Rev-Trac /RSC/* tables and custom function modules exist only where Rev-Trac/custom add-ons are installed. Confirm fields in SE11.',
-    difficulty: 'Advanced',
-    explanation: 'Use transport-assignment detail tables to identify RTs that have no assigned transport details before reporting or retrofit analysis.',
-    code: `SELECT a~*
-  FROM /rsc/t_rm_3a AS a
-  INNER JOIN /rsc/t_rm_3b AS b
-    ON b~rm_id = a~rm_id
-  INTO TABLE @DATA(lt_non_empty_rts).
-
-"Exclude owners/teams if your process has a team filter table.
-DELETE lt_non_empty_rts WHERE owner IN lr_excluded_owner.`,
-    notes: [
-      '/RSC/T_RM_3A and /RSC/T_RM_3B meanings depend on Rev-Trac version/customization.',
-      'Check actual field names in SE11 before copying.',
-      'Rev-Trac status and SAP object state can differ.',
-    ],
-    commonMistakes: [
-      'Assuming Rev-Trac tables exist in every SAP system.',
-      'Treating an RT header as non-empty without checking assignment details.',
-      'Ignoring process-specific exclusions such as owner/team filters.',
-    ],
-    relatedTopics: ['Joins', 'SE11', 'Rev-Trac Tips'],
   },
   {
     id: 'spool-submit-to-sap-spool',
@@ -3121,64 +2991,5 @@ ENDIF.`,
       'Using string fields for date math.',
     ],
     relatedTopics: ['SY-DATUM', 'Messages', 'Selection Screens'],
-  },
-  {
-    id: 'standard-job-tables',
-    title: 'Job Tables: TBTCO and TBTCP',
-    category: 'SAP Standard Tables',
-    subcategory: 'Jobs',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'Job metadata table usage depends on authorization and system release. Prefer SM37 for normal job monitoring.',
-    difficulty: 'Intermediate',
-    explanation: 'Use TBTCO and TBTCP for read-only background job analysis when a programmatic check is needed.',
-    code: `SELECT jobname jobcount status sdlstrtdt sdlstrttm
-  FROM tbtco
-  INTO TABLE @DATA(lt_jobs)
-  WHERE jobname IN @s_jobname.
-
-SELECT jobname jobcount progname variant
-  FROM tbtcp
-  INTO TABLE @DATA(lt_steps)
-  FOR ALL ENTRIES IN @lt_jobs
-  WHERE jobname  = @lt_jobs-jobname
-    AND jobcount = @lt_jobs-jobcount.`,
-    notes: [
-      'TBTCO contains job header/status data.',
-      'TBTCP contains job step/program data.',
-      'Use SM37 for interactive job troubleshooting.',
-    ],
-    commonMistakes: [
-      'Forgetting the FOR ALL ENTRIES empty-table guard.',
-      'Treating job status without understanding your operations process.',
-      'Updating standard job tables directly.',
-    ],
-    relatedTopics: ['Background Jobs', 'SM37', 'FOR ALL ENTRIES'],
-  },
-  {
-    id: 'revtrac-status-read',
-    title: 'Rev-Trac Status Read Pattern',
-    category: 'Rev-Trac',
-    subcategory: 'RT Analysis',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'Rev-Trac tables and fields are installation-specific. Confirm table definitions in SE11 before use.',
-    difficulty: 'Advanced',
-    explanation: 'Read Rev-Trac header/status style data only after confirming the local table structure.',
-    code: `SELECT rm_id status owner scen_man
-  FROM /rsc/t_rm_3a
-  INTO TABLE @DATA(lt_rt_header)
-  WHERE rm_id IN @s_rt.
-
-DELETE lt_rt_header WHERE owner IN lr_excluded_owner.`,
-    notes: [
-      '/RSC/T_RM_3A purpose can vary by Rev-Trac version/customization.',
-      'SCEN_MAN usually indicates manual handling in many retrofit contexts.',
-      'Confirm actual status meaning with your local Rev-Trac process.',
-    ],
-    commonMistakes: [
-      'Assuming Rev-Trac field names across systems.',
-      'Treating Rev-Trac status as proof of SAP object version.',
-      'Forgetting owner/team exclusions used by the project.',
-    ],
-    relatedTopics: ['Rev-Trac Tips', 'SE11', 'Custom Tables'],
   },
 ];
