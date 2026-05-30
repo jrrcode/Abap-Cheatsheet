@@ -1498,4 +1498,789 @@ SELECT *
     ],
     relatedTopics: ['Open SQL', 'ALV', 'ST05'],
   },
+  {
+    id: 'selection-parameters',
+    title: 'Selection Screen PARAMETERS',
+    category: 'Selection Screens',
+    subcategory: 'PARAMETERS',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'PARAMETERS is classic-compatible in executable reports.',
+    difficulty: 'Beginner',
+    explanation: 'Use PARAMETERS for single-value user input on a report selection screen.',
+    code: `REPORT z_demo_parameters.
+
+PARAMETERS p_bukrs TYPE bukrs OBLIGATORY.
+PARAMETERS p_test  AS CHECKBOX DEFAULT abap_true.
+
+START-OF-SELECTION.
+  WRITE: / 'Company code:', p_bukrs.
+  WRITE: / 'Test mode:', p_test.`,
+    notes: [
+      'Use OBLIGATORY for required single-value input.',
+      'Prefer DDIC types such as BUKRS so input length and conversion match SAP fields.',
+      'Checkbox parameters return ABAP boolean-style values.',
+    ],
+    commonMistakes: [
+      'Using generic CHAR parameters when a DDIC type exists.',
+      'Forgetting validation for dependent fields.',
+      'Assuming checkbox values are text TRUE/FALSE.',
+    ],
+    relatedTopics: ['SELECT-OPTIONS', 'Validation', 'DDIC Types'],
+  },
+  {
+    id: 'selection-select-options',
+    title: 'Selection Screen SELECT-OPTIONS',
+    category: 'Selection Screens',
+    subcategory: 'SELECT-OPTIONS',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'SELECT-OPTIONS is classic-compatible in executable reports and creates a range table.',
+    difficulty: 'Beginner',
+    explanation: 'Use SELECT-OPTIONS when users need intervals, multiple values, exclusions, or pattern options.',
+    code: `TABLES vbak.
+
+SELECT-OPTIONS s_vbeln FOR vbak-vbeln.
+SELECT-OPTIONS s_erdat FOR vbak-erdat.
+
+START-OF-SELECTION.
+  SELECT vbeln erdat auart kunnr
+    FROM vbak
+    INTO TABLE @DATA(lt_orders)
+    WHERE vbeln IN @s_vbeln
+      AND erdat IN @s_erdat.`,
+    notes: [
+      'SELECT-OPTIONS creates SIGN, OPTION, LOW, and HIGH fields.',
+      'Use it directly with SQL IN for common range filtering.',
+      'Keep the referenced field DDIC-based when possible.',
+    ],
+    commonMistakes: [
+      'Treating SELECT-OPTIONS as one value instead of a range table.',
+      'Forgetting users can enter exclusions unless restricted.',
+      'Using too broad a selection range on large tables.',
+    ],
+    relatedTopics: ['Ranges', 'Open SQL', 'Selection Validation'],
+  },
+  {
+    id: 'selection-validate-input',
+    title: 'Validate Selection Screen Input',
+    category: 'Selection Screens',
+    subcategory: 'AT SELECTION-SCREEN',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'AT SELECTION-SCREEN validation is classic-compatible for report selection screens.',
+    difficulty: 'Beginner',
+    explanation: 'Use AT SELECTION-SCREEN to validate report input before START-OF-SELECTION runs.',
+    code: `PARAMETERS p_bukrs TYPE bukrs.
+SELECT-OPTIONS s_vbeln FOR vbak-vbeln.
+
+AT SELECTION-SCREEN.
+  IF p_bukrs IS INITIAL AND s_vbeln[] IS INITIAL.
+    MESSAGE 'Enter company code or sales document' TYPE 'E'.
+  ENDIF.`,
+    notes: [
+      'MESSAGE TYPE E keeps the user on the selection screen.',
+      'Validate combinations of fields here.',
+      'Keep expensive database checks limited and selective.',
+    ],
+    commonMistakes: [
+      'Validating too late in START-OF-SELECTION.',
+      'Using warning messages when invalid input should stop execution.',
+      'Running expensive full-table checks from validation.',
+    ],
+    relatedTopics: ['Messages', 'PARAMETERS', 'SELECT-OPTIONS'],
+  },
+  {
+    id: 'selection-dynamic-modif-id',
+    title: 'Dynamic Selection Screen with MODIF ID',
+    category: 'Selection Screens',
+    subcategory: 'AT SELECTION-SCREEN OUTPUT',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'MODIF ID and SCREEN modification are classic-compatible in report selection screens.',
+    difficulty: 'Intermediate',
+    explanation: 'Use MODIF ID and AT SELECTION-SCREEN OUTPUT to enable, disable, hide, or require fields dynamically.',
+    code: `PARAMETERS p_basic RADIOBUTTON GROUP g1 DEFAULT 'X' USER-COMMAND mode.
+PARAMETERS p_adv   RADIOBUTTON GROUP g1.
+
+PARAMETERS p_bukrs TYPE bukrs MODIF ID bas.
+PARAMETERS p_vkorg TYPE vkorg MODIF ID adv.
+
+AT SELECTION-SCREEN OUTPUT.
+  LOOP AT SCREEN.
+    IF screen-group1 = 'ADV'.
+      screen-active = xsdbool( p_adv = abap_true ).
+      MODIFY SCREEN.
+    ENDIF.
+  ENDLOOP.`,
+    notes: [
+      'USER-COMMAND on a radio button triggers screen refresh behavior.',
+      'SCREEN-GROUP1 contains the MODIF ID in uppercase.',
+      'Use screen-active for simple show/hide behavior.',
+    ],
+    commonMistakes: [
+      'Forgetting MODIFY SCREEN after changing SCREEN attributes.',
+      'Checking lowercase MODIF IDs.',
+      'Putting dynamic screen logic in AT SELECTION-SCREEN instead of OUTPUT.',
+    ],
+    relatedTopics: ['Radio Buttons', 'Selection Validation', 'SCREEN'],
+  },
+  {
+    id: 'selection-radio-checkbox',
+    title: 'Radio Buttons and Checkboxes',
+    category: 'Selection Screens',
+    subcategory: 'Controls',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Radio buttons and checkboxes are classic-compatible selection-screen controls.',
+    difficulty: 'Beginner',
+    explanation: 'Use radio buttons for mutually exclusive modes and checkboxes for independent on/off settings.',
+    code: `PARAMETERS p_list RADIOBUTTON GROUP out DEFAULT 'X'.
+PARAMETERS p_alv  RADIOBUTTON GROUP out.
+
+PARAMETERS p_test AS CHECKBOX DEFAULT abap_true.
+
+START-OF-SELECTION.
+  IF p_alv = abap_true.
+    PERFORM display_alv.
+  ELSE.
+    PERFORM display_list.
+  ENDIF.`,
+    notes: [
+      'Radio buttons in the same GROUP are mutually exclusive.',
+      'Checkboxes are independent flags.',
+      'Use clear parameter names because these become global report variables.',
+    ],
+    commonMistakes: [
+      'Putting unrelated radio buttons in the same group.',
+      'Comparing checkbox values to text TRUE.',
+      'Not setting a useful default mode.',
+    ],
+    relatedTopics: ['PARAMETERS', 'MODIF ID', 'ALV'],
+  },
+  {
+    id: 'itab-append-row',
+    title: 'APPEND Internal Table Row',
+    category: 'Internal Tables',
+    subcategory: 'APPEND',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'APPEND is classic-compatible. VALUE row construction requires modern ABAP.',
+    difficulty: 'Beginner',
+    explanation: 'Use APPEND to add a row to the end of a STANDARD TABLE.',
+    code: `DATA ls_item TYPE ty_item.
+
+ls_item-matnr = 'MAT1'.
+ls_item-qty   = 10.
+APPEND ls_item TO lt_items.
+
+"Modern row construction.
+APPEND VALUE #( matnr = 'MAT2' qty = 20 ) TO lt_items.`,
+    notes: [
+      'APPEND is intended for standard table append patterns.',
+      'Use INSERT INTO TABLE for sorted or hashed tables.',
+      'Clear or rebuild the work area before reuse when necessary.',
+    ],
+    commonMistakes: [
+      'Using APPEND with sorted/hashed tables.',
+      'Appending stale work-area values.',
+      'Assuming APPEND checks uniqueness.',
+    ],
+    relatedTopics: ['INSERT', 'STANDARD TABLE', 'VALUE'],
+  },
+  {
+    id: 'itab-insert-row',
+    title: 'INSERT Internal Table Row',
+    category: 'Internal Tables',
+    subcategory: 'INSERT',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'INSERT INTO TABLE is broadly compatible and works with sorted/hashed table keys.',
+    difficulty: 'Beginner',
+    explanation: 'Use INSERT INTO TABLE when adding rows to sorted or hashed tables, or when key handling matters.',
+    code: `DATA lt_hashed TYPE HASHED TABLE OF ty_item WITH UNIQUE KEY matnr.
+
+INSERT VALUE #( matnr = 'MAT1' qty = 10 ) INTO TABLE lt_hashed.
+
+IF sy-subrc <> 0.
+  MESSAGE 'Duplicate or invalid key while inserting row' TYPE 'E'.
+ENDIF.`,
+    notes: [
+      'INSERT respects sorted/hashed table keys.',
+      'Check SY-SUBRC for duplicate-key situations.',
+      'Use VALUE only where your target ABAP release supports it.',
+    ],
+    commonMistakes: [
+      'Ignoring duplicate-key insert failures.',
+      'Using APPEND for hashed tables.',
+      'Forgetting that unique keys reject duplicates.',
+    ],
+    relatedTopics: ['HASHED TABLE', 'SORTED TABLE', 'SY-SUBRC'],
+  },
+  {
+    id: 'itab-clear-refresh',
+    title: 'CLEAR vs REFRESH Internal Table',
+    category: 'Internal Tables',
+    subcategory: 'CLEAR / REFRESH',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'CLEAR and REFRESH are classic-compatible. Header-line tables are old style and should be avoided in new code.',
+    difficulty: 'Beginner',
+    explanation: 'Use CLEAR for modern internal tables without header lines; understand REFRESH mostly for reading legacy code.',
+    code: `CLEAR lt_items.   "Clears the table body for tables without header line.
+
+"Legacy style still seen in old code.
+REFRESH lt_items.
+
+"Avoid old header line style in new code.
+DATA lt_old TYPE STANDARD TABLE OF ty_item WITH HEADER LINE.`,
+    notes: [
+      'Modern code should avoid WITH HEADER LINE.',
+      'For normal internal tables without header lines, CLEAR lt_table empties the table.',
+      'REFRESH is mainly a legacy-code recognition topic today.',
+    ],
+    commonMistakes: [
+      'Confusing table body and header line in old code.',
+      'Using REFRESH in new code without reason.',
+      'Clearing a work area when you intended to clear the table.',
+    ],
+    relatedTopics: ['Header Lines', 'Internal Tables', 'Legacy ABAP'],
+  },
+  {
+    id: 'open-sql-like-not-like',
+    title: 'LIKE and NOT LIKE in Open SQL',
+    category: 'Open SQL',
+    subcategory: 'WHERE Conditions',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'LIKE and NOT LIKE are common Open SQL predicates. @ host variables are modern syntax.',
+    difficulty: 'Beginner',
+    explanation: 'Use SQL wildcards with LIKE/NOT LIKE when matching database values by pattern.',
+    code: `SELECT kunnr name1
+  FROM kna1
+  INTO TABLE @DATA(lt_customers)
+  WHERE name1 LIKE 'ABC%'
+    AND name1 NOT LIKE '%TEST%'.`,
+    notes: [
+      'SQL LIKE uses % as the wildcard.',
+      'ABAP CP uses * instead, which is different.',
+      'Pattern searches can be expensive if they cannot use indexes effectively.',
+    ],
+    commonMistakes: [
+      'Using * instead of % in SQL LIKE.',
+      'Using leading wildcards on large tables without understanding performance impact.',
+      'Using pattern matching instead of exact key filters when exact filters are available.',
+    ],
+    relatedTopics: ['WHERE', 'Performance', 'Common Mistakes'],
+  },
+  {
+    id: 'open-sql-host-variables',
+    title: 'Modern Open SQL Host Variables',
+    category: 'Open SQL',
+    subcategory: 'Modern Open SQL',
+    compatibility: ['Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'The @ escape for ABAP host variables is modern Open SQL syntax.',
+    difficulty: 'Beginner',
+    explanation: 'Use @ before ABAP variables in modern Open SQL to separate ABAP values from database fields.',
+    code: `SELECT SINGLE bukrs butxt
+  FROM t001
+  INTO @DATA(ls_company)
+  WHERE bukrs = @p_bukrs.
+
+SELECT vbeln erdat
+  FROM vbak
+  INTO TABLE @DATA(lt_orders)
+  WHERE erdat IN @s_erdat.`,
+    notes: [
+      '@ makes it clear which names are ABAP variables.',
+      'Inline DATA in INTO requires modern ABAP.',
+      'Older code may omit @, so recognize both styles when maintaining legacy reports.',
+    ],
+    commonMistakes: [
+      'Forgetting @ in modern Open SQL.',
+      'Mixing old and new SQL syntax in the same statement.',
+      'Assuming inline DATA is supported on all ECC systems.',
+    ],
+    relatedTopics: ['SELECT SINGLE', 'SELECT INTO TABLE', 'Compatibility'],
+  },
+  {
+    id: 'joins-rsc-example',
+    title: '/RSC/T_RM_3A and /RSC/T_RM_3B Join Example',
+    category: 'Joins',
+    subcategory: 'Custom Namespace Join',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Tables in customer or product namespaces vary by system; confirm actual fields and keys in SE11 before use.',
+    difficulty: 'Intermediate',
+    explanation: 'Use the same JOIN structure for namespace tables, but always validate key fields before copying the pattern.',
+    code: `SELECT a~*
+  FROM /rsc/t_rm_3a AS a
+  INNER JOIN /rsc/t_rm_3b AS b
+    ON b~rm_id = a~rm_id
+  INTO TABLE @DATA(lt_rm_3a_matches).`,
+    notes: [
+      'This is a structural example; confirm RM_ID and real key fields in your system.',
+      'Namespace tables may belong to add-ons or industry solutions.',
+      'Avoid SELECT a~* in final code unless all fields are truly needed.',
+    ],
+    commonMistakes: [
+      'Copying namespace table fields without checking SE11.',
+      'Assuming table names exist in every system.',
+      'Using SELECT * in productive code unnecessarily.',
+    ],
+    relatedTopics: ['INNER JOIN', 'SE11', 'Select Only Needed Fields'],
+  },
+  {
+    id: 'joins-cross-warning',
+    title: 'CROSS JOIN Warning',
+    category: 'Joins',
+    subcategory: 'CROSS JOIN',
+    compatibility: ['Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'CROSS JOIN support and syntax depend on release. The main lesson is to avoid accidental Cartesian products.',
+    difficulty: 'Advanced',
+    explanation: 'A cross join creates combinations of rows from both sides. Avoid it unless the Cartesian product is intentional.',
+    code: `"Conceptual warning:
+"Rows returned = rows_in_left_table * rows_in_right_table.
+"Use only when every combination is really required.
+
+"Prefer an explicit join condition for business relationships.
+SELECT a~vbeln, b~posnr
+  FROM vbak AS a
+  INNER JOIN vbap AS b
+    ON b~vbeln = a~vbeln
+  INTO TABLE @DATA(lt_items).`,
+    notes: [
+      'Missing or wrong join conditions can produce explosive result sizes.',
+      'Most business joins should have explicit ON conditions.',
+      'Use ST05 if a join unexpectedly reads too much data.',
+    ],
+    commonMistakes: [
+      'Creating a Cartesian product accidentally.',
+      'Using DISTINCT after a wrong join instead of fixing the ON condition.',
+      'Joining tables without checking keys.',
+    ],
+    relatedTopics: ['INNER JOIN', 'Performance', 'DDIC'],
+  },
+  {
+    id: 'fm-basic-syntax',
+    title: 'CALL FUNCTION Basic Syntax',
+    category: 'Function Modules / RFC',
+    subcategory: 'CALL FUNCTION',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'CALL FUNCTION is classic-compatible.',
+    difficulty: 'Beginner',
+    explanation: 'This is the smallest function module call shape. Add interface sections only when the function module defines them.',
+    code: `CALL FUNCTION 'Z_DEMO_FUNCTION'.`,
+    notes: [
+      'Check the real interface in SE37.',
+      'Many standard function modules have IMPORTING, EXPORTING, TABLES, or EXCEPTIONS sections.',
+      'Prefer class methods for new internal APIs when possible.',
+    ],
+    commonMistakes: [
+      'Calling a function module without checking required parameters.',
+      'Ignoring documented exceptions.',
+      'Hard-coding custom function module names in reusable utilities.',
+    ],
+    relatedTopics: ['SE37', 'Function Modules', 'Methods'],
+  },
+  {
+    id: 'fm-exporting',
+    title: 'CALL FUNCTION with EXPORTING',
+    category: 'Function Modules / RFC',
+    subcategory: 'CALL FUNCTION',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'EXPORTING parameters pass values from the caller to the function module.',
+    difficulty: 'Beginner',
+    explanation: 'Use EXPORTING to pass input values into a function module.',
+    code: `CALL FUNCTION 'Z_CALCULATE_TOTAL'
+  EXPORTING
+    iv_net = lv_net
+    iv_tax = lv_tax.`,
+    notes: [
+      'EXPORTING is from the caller perspective.',
+      'Parameter names must match the function module interface.',
+      'Use DDIC-compatible types expected by the FM.',
+    ],
+    commonMistakes: [
+      'Thinking EXPORTING means output from the function module.',
+      'Passing wrong parameter names.',
+      'Passing unconverted business keys such as material/customer numbers.',
+    ],
+    relatedTopics: ['IMPORTING', 'Function Modules', 'SE37'],
+  },
+  {
+    id: 'fm-importing',
+    title: 'CALL FUNCTION with IMPORTING',
+    category: 'Function Modules / RFC',
+    subcategory: 'CALL FUNCTION',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'IMPORTING parameters receive values from the function module into the caller.',
+    difficulty: 'Beginner',
+    explanation: 'Use IMPORTING to receive output values returned by a function module.',
+    code: `CALL FUNCTION 'Z_CALCULATE_TOTAL'
+  EXPORTING
+    iv_net   = lv_net
+    iv_tax   = lv_tax
+  IMPORTING
+    ev_total = lv_total.`,
+    notes: [
+      'IMPORTING is from the caller perspective.',
+      'Initialize or handle output variables according to your logic.',
+      'Check exceptions before trusting returned values.',
+    ],
+    commonMistakes: [
+      'Confusing IMPORTING and EXPORTING direction.',
+      'Using returned values after a failed call.',
+      'Ignoring type mismatches in the FM interface.',
+    ],
+    relatedTopics: ['EXPORTING', 'EXCEPTIONS', 'SY-SUBRC'],
+  },
+  {
+    id: 'fm-tables',
+    title: 'CALL FUNCTION with TABLES',
+    category: 'Function Modules / RFC',
+    subcategory: 'CALL FUNCTION',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'TABLES parameters are common in older function modules but are old style for new APIs.',
+    difficulty: 'Beginner',
+    explanation: 'Use TABLES when calling older function modules that define table parameters.',
+    code: `CALL FUNCTION 'Z_PROCESS_ITEMS'
+  TABLES
+    it_items = lt_items.`,
+    notes: [
+      'TABLES parameters can behave like changing table parameters.',
+      'Match the expected row type exactly.',
+      'For new APIs, prefer typed IMPORTING/EXPORTING/CHANGING table parameters or methods.',
+    ],
+    commonMistakes: [
+      'Passing a table with the wrong row type.',
+      'Assuming TABLES is read-only.',
+      'Using TABLES in new custom APIs without reason.',
+    ],
+    relatedTopics: ['Function Modules', 'Internal Tables', 'Legacy ABAP'],
+  },
+  {
+    id: 'fm-exceptions',
+    title: 'CALL FUNCTION with EXCEPTIONS',
+    category: 'Function Modules / RFC',
+    subcategory: 'CALL FUNCTION',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Classic function module exceptions set SY-SUBRC according to the EXCEPTIONS mapping.',
+    difficulty: 'Beginner',
+    explanation: 'Map function module exceptions and handle SY-SUBRC immediately after the call.',
+    code: `CALL FUNCTION 'Z_PROCESS_ITEMS'
+  EXPORTING
+    iv_mode = lv_mode
+  TABLES
+    it_items = lt_items
+  EXCEPTIONS
+    invalid_mode = 1
+    no_data      = 2
+    OTHERS       = 3.
+
+IF sy-subrc <> 0.
+  MESSAGE 'Function module failed' TYPE 'E'.
+ENDIF.`,
+    notes: [
+      'Exception numbers are chosen in the caller mapping.',
+      'Check SY-SUBRC immediately after the call.',
+      'Use MESSAGE ... RAISING behavior only when the FM is designed for it.',
+    ],
+    commonMistakes: [
+      'Ignoring SY-SUBRC after EXCEPTIONS.',
+      'Handling all failures as OTHERS without useful diagnostics.',
+      'Trusting output parameters after a failed call.',
+    ],
+    relatedTopics: ['SY-SUBRC', 'Messages', 'Function Modules'],
+  },
+  {
+    id: 'alv-classic-layout',
+    title: 'Classic ALV Layout Settings',
+    category: 'ALV',
+    subcategory: 'Classic ALV',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'SLIS_LAYOUT_ALV is used with classic REUSE_ALV_* function modules.',
+    difficulty: 'Intermediate',
+    explanation: 'Use SLIS_LAYOUT_ALV to control simple classic ALV display options such as zebra striping.',
+    code: `DATA ls_layout TYPE slis_layout_alv.
+
+ls_layout-zebra             = abap_true.
+ls_layout-colwidth_optimize = abap_true.
+
+CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+  EXPORTING
+    is_layout = ls_layout
+  TABLES
+    t_outtab  = lt_output.`,
+    notes: [
+      'Layout settings must be passed before display.',
+      'Classic ALV layout options are different from SALV column APIs.',
+      'Use field catalog plus layout together for readable output.',
+    ],
+    commonMistakes: [
+      'Setting layout after the ALV call.',
+      'Mixing SLIS and LVC structures incorrectly.',
+      'Expecting SALV methods to work with REUSE_ALV_GRID_DISPLAY.',
+    ],
+    relatedTopics: ['Classic ALV', 'Field Catalog', 'SALV'],
+  },
+  {
+    id: 'alv-no-data-check',
+    title: 'ALV No Data Found Check',
+    category: 'ALV',
+    subcategory: 'Display Guard',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Checking internal table content before display is broadly compatible.',
+    difficulty: 'Beginner',
+    explanation: 'Check whether the output table is initial before opening ALV so the user gets a clear message.',
+    code: `IF lt_output IS INITIAL.
+  MESSAGE 'No data found for the selection' TYPE 'S' DISPLAY LIKE 'E'.
+  RETURN.
+ENDIF.
+
+cl_salv_table=>factory(
+  IMPORTING
+    r_salv_table = DATA(lo_alv)
+  CHANGING
+    t_table      = lt_output ).
+
+lo_alv->display( ).`,
+    notes: [
+      'A clear no-data message is better than an empty grid in many reports.',
+      'Use RETURN to stop further display logic.',
+      'Choose message type according to your report standards.',
+    ],
+    commonMistakes: [
+      'Showing an empty ALV with no explanation.',
+      'Checking the wrong internal table.',
+      'Continuing display logic after a no-data message.',
+    ],
+    relatedTopics: ['SALV', 'Messages', 'Selection Screens'],
+  },
+  {
+    id: 'modern-for-in',
+    title: 'FOR IN Table Expression',
+    category: 'Modern ABAP',
+    subcategory: 'Expressions',
+    compatibility: ['Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'FOR expressions require modern ABAP; exact expression support varies by release.',
+    difficulty: 'Intermediate',
+    explanation: 'Use FOR IN inside VALUE to build a new internal table from another internal table.',
+    code: `DATA lt_matnr_range TYPE RANGE OF matnr.
+
+lt_matnr_range = VALUE #(
+  FOR ls_item IN lt_items
+  ( sign = 'I' option = 'EQ' low = ls_item-matnr ) ).`,
+    notes: [
+      'FOR expressions are concise for table transformations.',
+      'Keep them simple enough to read on mobile and during debugging.',
+      'Use a LOOP when the transformation has many conditions or side effects.',
+    ],
+    commonMistakes: [
+      'Using FOR expressions on unsupported releases.',
+      'Creating duplicates when the target range should be unique.',
+      'Writing dense expressions that are harder than a loop.',
+    ],
+    relatedTopics: ['VALUE', 'Ranges', 'Modern ABAP'],
+  },
+  {
+    id: 'modern-xsdbool',
+    title: 'xsdbool Boolean Helper',
+    category: 'Modern ABAP',
+    subcategory: 'Expressions',
+    compatibility: ['Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'XSDBOOL is available in modern ABAP environments; verify target release support.',
+    difficulty: 'Beginner',
+    explanation: 'Use xsdbool to convert a logical expression into an ABAP_BOOL-style value.',
+    code: `DATA(lv_has_items) = xsdbool( lines( lt_items ) > 0 ).
+
+IF lv_has_items = abap_true.
+  WRITE: / 'Items found'.
+ENDIF.`,
+    notes: [
+      'xsdbool is useful when assigning a condition to a flag.',
+      'ABAP_BOOL values are usually ABAP_TRUE or ABAP_FALSE.',
+      'Use direct IF conditions when a separate flag is not needed.',
+    ],
+    commonMistakes: [
+      'Using text TRUE/FALSE instead of ABAP_TRUE/ABAP_FALSE.',
+      'Creating unnecessary flags for one-time conditions.',
+      'Using xsdbool on systems that do not support it.',
+    ],
+    relatedTopics: ['IF / ELSEIF', 'ABAP_TRUE', 'Modern ABAP'],
+  },
+  {
+    id: 'oop-method-signature',
+    title: 'Method Parameters Template',
+    category: 'OOP ABAP',
+    subcategory: 'Methods',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'IMPORTING, EXPORTING, CHANGING, and RETURNING method parameters are broadly available in ABAP Objects.',
+    difficulty: 'Intermediate',
+    explanation: 'Use explicit method signatures so inputs, outputs, and return values are easy to understand.',
+    code: `METHODS calculate_total
+  IMPORTING
+    iv_net          TYPE p
+    iv_tax          TYPE p
+  EXPORTING
+    ev_currency     TYPE waers
+  RETURNING
+    VALUE(rv_total) TYPE p.
+
+METHOD calculate_total.
+  ev_currency = 'USD'.
+  rv_total = iv_net + iv_tax.
+ENDMETHOD.`,
+    notes: [
+      'RETURNING is best for one primary result.',
+      'EXPORTING can return additional values.',
+      'CHANGING should be used deliberately because it modifies caller data.',
+    ],
+    commonMistakes: [
+      'Using CHANGING for values that should be RETURNING.',
+      'Returning too many loosely related values.',
+      'Leaving parameter names vague.',
+    ],
+    relatedTopics: ['OOP ABAP', 'Static Method', 'FORM / PERFORM'],
+  },
+  {
+    id: 'practical-basic-report',
+    title: 'Basic Report Structure',
+    category: 'Practical Templates',
+    subcategory: 'Report Starter',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Executable report event blocks are classic-compatible.',
+    difficulty: 'Beginner',
+    explanation: 'Use this as a small starter shape for a report with selection input, data read, and display logic.',
+    code: `REPORT z_demo_report.
+
+PARAMETERS p_bukrs TYPE bukrs OBLIGATORY.
+
+START-OF-SELECTION.
+  PERFORM read_data.
+  PERFORM display_data.
+
+FORM read_data.
+  "Read data here.
+ENDFORM.
+
+FORM display_data.
+  "Display data here.
+ENDFORM.`,
+    notes: [
+      'Keep report event blocks short.',
+      'Move meaningful logic into methods or FORMs depending on the codebase style.',
+      'Prefer classes/methods for new larger reports.',
+    ],
+    commonMistakes: [
+      'Putting all logic directly in START-OF-SELECTION.',
+      'Using global variables for everything.',
+      'Skipping input validation.',
+    ],
+    relatedTopics: ['Selection Screens', 'Modularization', 'OOP ABAP'],
+  },
+  {
+    id: 'practical-range-table',
+    title: 'Range Table Template',
+    category: 'Practical Templates',
+    subcategory: 'Ranges',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'RANGE OF is broadly used. VALUE construction requires modern ABAP.',
+    difficulty: 'Beginner',
+    explanation: 'Use range tables to pass include/exclude conditions into Open SQL or internal table filters.',
+    code: `DATA lr_matnr TYPE RANGE OF matnr.
+
+APPEND VALUE #( sign = 'I' option = 'EQ' low = lv_matnr ) TO lr_matnr.
+APPEND VALUE #( sign = 'I' option = 'BT' low = 'MAT1' high = 'MAT9' ) TO lr_matnr.
+
+SELECT matnr mtart
+  FROM mara
+  INTO TABLE @DATA(lt_materials)
+  WHERE matnr IN @lr_matnr.`,
+    notes: [
+      'SIGN is I for include and E for exclude.',
+      'OPTION can be EQ, BT, CP, and others depending on use.',
+      'Use SELECT-OPTIONS when users need to enter ranges themselves.',
+    ],
+    commonMistakes: [
+      'Forgetting HIGH for BT ranges.',
+      'Using ABAP CP-style wildcard when SQL LIKE is expected elsewhere.',
+      'Building ranges with the wrong DDIC type.',
+    ],
+    relatedTopics: ['SELECT-OPTIONS', 'Open SQL', 'FOR IN'],
+  },
+  {
+    id: 'practical-message-handling',
+    title: 'Message Handling Template',
+    category: 'Practical Templates',
+    subcategory: 'Messages',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'MESSAGE is classic-compatible. Message class usage depends on your project standards.',
+    difficulty: 'Beginner',
+    explanation: 'Use MESSAGE for user-facing report validation and status feedback.',
+    code: `IF p_bukrs IS INITIAL.
+  MESSAGE 'Company code is required' TYPE 'E'.
+ENDIF.
+
+MESSAGE 'No data found for the selection' TYPE 'S' DISPLAY LIKE 'E'.
+
+MESSAGE e001(zmsg) WITH p_bukrs.`,
+    notes: [
+      'TYPE E stops selection-screen processing when used in validation.',
+      'DISPLAY LIKE changes visual style without changing the message type behavior.',
+      'Message classes are better for translatable production messages.',
+    ],
+    commonMistakes: [
+      'Using hard-coded messages everywhere in production code.',
+      'Using TYPE S for errors without DISPLAY LIKE when the user may miss it.',
+      'Showing technical text directly to end users.',
+    ],
+    relatedTopics: ['Selection Validation', 'SY-SUBRC', 'TRY/CATCH'],
+  },
+  {
+    id: 'practical-try-catch',
+    title: 'TRY / CATCH Template',
+    category: 'Practical Templates',
+    subcategory: 'Exception Handling',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Class-based exceptions are standard ABAP Objects practice. Inline DATA in CATCH requires modern ABAP.',
+    difficulty: 'Beginner',
+    explanation: 'Use TRY/CATCH around logic that can raise class-based exceptions.',
+    code: `TRY.
+    "Risky logic here.
+    DATA(lv_result) = lo_service->run( ).
+  CATCH cx_root INTO DATA(lx_error).
+    MESSAGE lx_error->get_text( ) TYPE 'E'.
+ENDTRY.`,
+    notes: [
+      'Catch specific exception classes when you can handle them meaningfully.',
+      'CX_ROOT is a broad fallback.',
+      'Do not swallow exceptions silently.',
+    ],
+    commonMistakes: [
+      'Catching CX_ROOT and doing nothing.',
+      'Showing raw technical messages when users need business guidance.',
+      'Wrapping too much unrelated code in one TRY block.',
+    ],
+    relatedTopics: ['Messages', 'OOP ABAP', 'Method Calls'],
+  },
+  {
+    id: 'practical-method-returning',
+    title: 'Method with RETURNING',
+    category: 'Practical Templates',
+    subcategory: 'Methods',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'RETURNING parameters are broadly available in ABAP Objects.',
+    difficulty: 'Beginner',
+    explanation: 'Use RETURNING when a method has one main result.',
+    code: `METHODS get_count
+  RETURNING VALUE(rv_count) TYPE i.
+
+METHOD get_count.
+  rv_count = lines( mt_items ).
+ENDMETHOD.
+
+DATA(lv_count) = lo_service->get_count( ).`,
+    notes: [
+      'RETURNING makes functional-style calls concise.',
+      'Use a clear result parameter name such as rv_count.',
+      'Avoid changing global state inside simple getter methods.',
+    ],
+    commonMistakes: [
+      'Using EXPORTING for one primary result when RETURNING is clearer.',
+      'Returning a generic type without reason.',
+      'Doing expensive hidden work in a simple getter.',
+    ],
+    relatedTopics: ['OOP ABAP', 'Method Parameters', 'Modern ABAP'],
+  },
 ];

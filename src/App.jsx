@@ -33,6 +33,7 @@ const views = [
 
 const categoryOrder = [
   'Basics',
+  'Selection Screens',
   'Internal Tables',
   'Open SQL',
   'Joins',
