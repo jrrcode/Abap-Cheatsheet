@@ -450,7 +450,7 @@ CALL FUNCTION 'RFC_CONNECTION_CLOSE'
   {
     id: 'foundation-ddic',
     title: 'SAP Dictionary / DDIC Basics',
-    category: 'DDIC',
+    category: 'SAP Dictionary / DDIC',
     subcategory: 'SE11 Objects',
     tags: ['Beginner', 'DDIC', 'SE11', 'Classic ABAP', 'S/4HANA'],
     compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],

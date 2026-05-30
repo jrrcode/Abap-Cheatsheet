@@ -31,6 +31,25 @@ const views = [
   { id: 'contribute', label: 'Add Template Guide', icon: Github },
 ];
 
+const categoryOrder = [
+  'All',
+  'Basics',
+  'Internal Tables',
+  'Open SQL',
+  'Joins',
+  'Modularization',
+  'Function Modules / RFC',
+  'SAP Dictionary / DDIC',
+  'Transport Tables',
+  'ALV',
+  'Modern ABAP',
+  'OOP ABAP',
+  'Debugging',
+  'Performance',
+  'Common Mistakes',
+  'Practical Templates',
+];
+
 const pageMeta = {
   overview: {
     eyebrow: 'ABAP reference workspace',
@@ -64,10 +83,25 @@ function App() {
   const [favorites, toggleFavorite, setFavorites] = useFavorites();
 
   const tags = useMemo(() => getAllTags(cheatsheets), []);
-  const categories = useMemo(
-    () => ['All', ...new Set(cheatsheets.map((sheet) => sheet.category))].sort((a, b) => (a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b))),
+  const categoryCounts = useMemo(
+    () =>
+      cheatsheets.reduce(
+        (counts, sheet) => ({
+          ...counts,
+          [sheet.category]: (counts[sheet.category] ?? 0) + 1,
+        }),
+        { All: cheatsheets.length },
+      ),
     [],
   );
+  const categories = useMemo(() => {
+    const available = new Set(['All', ...cheatsheets.map((sheet) => sheet.category)]);
+    const ordered = categoryOrder.filter((category) => available.has(category));
+    const remaining = [...available]
+      .filter((category) => !categoryOrder.includes(category))
+      .sort((a, b) => a.localeCompare(b));
+    return [...ordered, ...remaining];
+  }, []);
   const validFavoriteCount = useMemo(
     () => favorites.filter((id) => cheatsheets.some((sheet) => sheet.id === id)).length,
     [favorites],
@@ -204,13 +238,13 @@ function App() {
               />
             ) : null}
 
-            {activeView === 'overview' ? (
+            {activeView === 'overview' || activeView === 'favorites' ? (
               <section className="mb-5 rounded-md border border-ink-200 bg-white p-3 dark:border-ink-800 dark:bg-ink-900 sm:p-4">
                 <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h2 className="text-sm font-semibold text-ink-950 dark:text-white">Filters</h2>
+                    <h2 className="text-sm font-semibold text-ink-950 dark:text-white">Topic Tabs</h2>
                     <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
-                      Filter by category or tag, then use search to narrow further.
+                      Choose a category tab, then use tags or search to narrow further.
                     </p>
                   </div>
                   {activeCategory !== 'All' || activeTags.length > 0 || query ? (
@@ -224,30 +258,46 @@ function App() {
                   ) : null}
                 </div>
                 <div className="space-y-3">
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                     {categories.map((category) => (
                       <button
-                        className={`tag-chip ${activeCategory === category ? 'tag-chip-active' : ''}`}
+                        className={`min-h-11 rounded-md border px-3 py-2 text-left text-sm font-semibold transition ${
+                          activeCategory === category
+                            ? 'border-sap-500 bg-sap-50 text-sap-800 dark:border-sap-500 dark:bg-sap-900/45 dark:text-sap-100'
+                            : 'border-ink-200 bg-white text-ink-700 hover:border-sap-300 hover:text-sap-800 dark:border-ink-700 dark:bg-ink-900 dark:text-ink-200 dark:hover:border-sap-700 dark:hover:text-sap-200'
+                        }`}
                         key={category}
                         onClick={() => setActiveCategory(category)}
                         type="button"
                       >
-                        {category}
+                        <span className="flex items-center justify-between gap-3">
+                          <span>{category}</span>
+                          <span className="rounded-md bg-ink-100 px-2 py-0.5 text-xs text-ink-600 dark:bg-ink-800 dark:text-ink-300">
+                            {categoryCounts[category] ?? 0}
+                          </span>
+                        </span>
                       </button>
                     ))}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {tags.map((tag) => (
-                      <button
-                        className={`tag-chip ${activeTags.includes(tag) ? 'tag-chip-active' : ''}`}
-                        key={tag}
-                        onClick={() => toggleTag(tag)}
-                        type="button"
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
+                  {tags.length ? (
+                    <div>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
+                        Tags
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {tags.map((tag) => (
+                          <button
+                            className={`tag-chip ${activeTags.includes(tag) ? 'tag-chip-active' : ''}`}
+                            key={tag}
+                            onClick={() => toggleTag(tag)}
+                            type="button"
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </section>
             ) : null}
