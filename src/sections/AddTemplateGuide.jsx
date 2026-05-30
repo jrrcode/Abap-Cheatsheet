@@ -6,7 +6,6 @@ const starterTemplate = {
   title: '',
   category: '',
   subcategory: '',
-  tags: 'Classic ABAP\nBeginner',
   compatibility: ['Classic ABAP'],
   compatibilityNotes: '',
   difficulty: 'Beginner',
@@ -50,7 +49,6 @@ function templateString(value) {
 
 function buildTemplateObject(form) {
   const id = slugify(form.title || form.subcategory || 'new-abap-template');
-  const tags = listFromText(form.tags);
   const notes = listFromText(form.notes);
   const mistakes = listFromText(form.commonMistakes);
   const related = listFromText(form.relatedTopics);
@@ -60,7 +58,6 @@ function buildTemplateObject(form) {
   title: ${quote(form.title || 'New ABAP Template')},
   category: ${quote(form.category)},
   subcategory: ${quote(form.subcategory || 'General')},
-  tags: ${arrayBlock(tags)},
   compatibility: ${arrayBlock(form.compatibility)},
   compatibilityNotes: ${quote(form.compatibilityNotes)},
   difficulty: ${quote(form.difficulty)},
@@ -214,14 +211,6 @@ function AddTemplateGuide() {
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Tags, one per line">
-            <textarea
-              className="form-control min-h-28"
-              onChange={(event) => updateField('tags', event.target.value)}
-              value={form.tags}
-            />
-          </Field>
-
           <Field label="Related Topics, one per line">
             <textarea
               className="form-control min-h-28"

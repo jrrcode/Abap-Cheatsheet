@@ -1,15 +1,9 @@
-export function getAllTags(items) {
-  return [...new Set(items.flatMap((item) => item.tags ?? []))].sort((a, b) => a.localeCompare(b));
-}
-
-export function filterCheatsheets(items, { query, category, tags, favoritesOnly, favorites }) {
+export function filterCheatsheets(items, { query, category, favoritesOnly, favorites }) {
   const normalizedQuery = query.trim().toLowerCase();
 
   return items.filter((item) => {
     const matchesFavorites = !favoritesOnly || favorites.includes(item.id);
     const matchesCategory = category === 'All' || item.category === category;
-    const itemTags = item.tags ?? [];
-    const matchesTags = tags.length === 0 || tags.every((tag) => itemTags.includes(tag));
     const searchableText = [
       item.title,
       item.category,
@@ -22,12 +16,11 @@ export function filterCheatsheets(items, { query, category, tags, favoritesOnly,
       (item.notes ?? []).join(' '),
       (item.commonMistakes ?? []).join(' '),
       (item.relatedTopics ?? []).join(' '),
-      itemTags.join(' '),
     ]
       .join(' ')
       .toLowerCase();
     const matchesQuery = normalizedQuery.length === 0 || searchableText.includes(normalizedQuery);
 
-    return matchesFavorites && matchesCategory && matchesTags && matchesQuery;
+    return matchesFavorites && matchesCategory && matchesQuery;
   });
 }

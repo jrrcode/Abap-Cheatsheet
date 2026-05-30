@@ -2,7 +2,7 @@ import { ChevronDown, Star } from 'lucide-react';
 import { useState } from 'react';
 import CodeBlock from './CodeBlock';
 
-function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
+function CheatSheetCard({ favorite, onToggleFavorite, sheet }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -55,29 +55,6 @@ function CheatSheetCard({ favorite, onToggleFavorite, onToggleTag, sheet }) {
               size={18}
             />
           </div>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {sheet.tags.map((tag) => (
-            <span
-              className="tag-chip cursor-pointer"
-              key={tag}
-              onClick={(event) => {
-                event.stopPropagation();
-                onToggleTag(tag);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onToggleTag(tag);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-            >
-              {tag}
-            </span>
-          ))}
         </div>
       </div>
 

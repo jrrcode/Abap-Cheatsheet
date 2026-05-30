@@ -13,7 +13,7 @@ import {
 import { cheatsheets } from './data/cheatsheets';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useFavorites } from './hooks/useFavorites';
-import { filterCheatsheets, getAllTags } from './utils/search';
+import { filterCheatsheets } from './utils/search';
 import HeaderStat from './components/HeaderStat';
 import Sidebar from './components/Sidebar';
 import SearchBar from './components/SearchBar';
@@ -77,12 +77,10 @@ function App() {
   const [activeView, setActiveView] = useState('overview');
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [activeTags, setActiveTags] = useState([]);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [darkMode, setDarkMode] = useDarkMode();
   const [favorites, toggleFavorite, setFavorites] = useFavorites();
 
-  const tags = useMemo(() => getAllTags(cheatsheets), []);
   const categoryCounts = useMemo(
     () =>
       cheatsheets.reduce(
@@ -112,16 +110,15 @@ function App() {
       filterCheatsheets(cheatsheets, {
         query,
         category: activeCategory,
-        tags: activeTags,
         favoritesOnly: activeView === 'favorites',
         favorites,
       }),
-    [query, activeCategory, activeTags, activeView, favorites],
+    [query, activeCategory, activeView, favorites],
   );
 
   const currentPage = pageMeta[activeView] ?? pageMeta.overview;
   const showingOverviewHome =
-    activeView === 'overview' && query.trim() === '' && activeCategory === 'All' && activeTags.length === 0;
+    activeView === 'overview' && query.trim() === '' && activeCategory === 'All';
   const showSearch = activeView === 'overview' || activeView === 'favorites';
 
   const handleViewChange = (view) => {
@@ -129,22 +126,31 @@ function App() {
     setMobileNavOpen(false);
   };
 
-  const toggleTag = (tag) => {
-    setActiveTags((current) =>
-      current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag],
-    );
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+    if (activeView !== 'overview' && activeView !== 'favorites') {
+      setActiveView('overview');
+    }
+    setMobileNavOpen(false);
   };
 
   const clearFilters = () => {
     setQuery('');
     setActiveCategory('All');
-    setActiveTags([]);
   };
 
   return (
     <div className="min-h-screen bg-ink-50 text-ink-900 transition-colors dark:bg-ink-950 dark:text-ink-50">
       <div className="flex min-h-screen">
-        <Sidebar activeView={activeView} views={views} onViewChange={handleViewChange} />
+        <Sidebar
+          activeCategory={activeCategory}
+          activeView={activeView}
+          categories={categories}
+          categoryCounts={categoryCounts}
+          views={views}
+          onCategoryChange={handleCategoryChange}
+          onViewChange={handleViewChange}
+        />
 
         {mobileNavOpen ? (
           <div className="fixed inset-0 z-50 lg:hidden">
@@ -174,7 +180,16 @@ function App() {
                   <X size={18} />
                 </button>
               </div>
-              <Sidebar mobile activeView={activeView} views={views} onViewChange={handleViewChange} />
+              <Sidebar
+                mobile
+                activeCategory={activeCategory}
+                activeView={activeView}
+                categories={categories}
+                categoryCounts={categoryCounts}
+                views={views}
+                onCategoryChange={handleCategoryChange}
+                onViewChange={handleViewChange}
+              />
             </aside>
           </div>
         ) : null}
@@ -220,7 +235,6 @@ function App() {
               <section className="mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 <HeaderStat label="Cheatsheet templates" value={cheatsheets.length} />
                 <HeaderStat label="Categories" value={categories.length - 1} />
-                <HeaderStat label="Tag filters" value={tags.length} />
                 <HeaderStat label="Saved favorites" value={validFavoriteCount} />
               </section>
             ) : null}
@@ -239,77 +253,22 @@ function App() {
             ) : null}
 
             {activeView === 'overview' || activeView === 'favorites' ? (
-              <section className="mb-5 rounded-md border border-ink-200 bg-white p-3 dark:border-ink-800 dark:bg-ink-900 sm:p-4">
-                <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 className="text-sm font-semibold text-ink-950 dark:text-white">Topic Tabs</h2>
-                    <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
-                      Choose a category tab, then use tags or search to narrow further.
-                    </p>
-                  </div>
-                  {activeCategory !== 'All' || activeTags.length > 0 || query ? (
-                    <button
-                      className="min-h-10 rounded-md border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
-                      onClick={clearFilters}
-                      type="button"
-                    >
-                      Reset
-                    </button>
-                  ) : null}
-                </div>
-                <div className="space-y-3">
-                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                    {categories.map((category) => (
-                      <button
-                        className={`min-h-11 rounded-md border px-3 py-2 text-left text-sm font-semibold transition ${
-                          activeCategory === category
-                            ? 'border-sap-500 bg-sap-50 text-sap-800 dark:border-sap-500 dark:bg-sap-900/45 dark:text-sap-100'
-                            : 'border-ink-200 bg-white text-ink-700 hover:border-sap-300 hover:text-sap-800 dark:border-ink-700 dark:bg-ink-900 dark:text-ink-200 dark:hover:border-sap-700 dark:hover:text-sap-200'
-                        }`}
-                        key={category}
-                        onClick={() => setActiveCategory(category)}
-                        type="button"
-                      >
-                        <span className="flex items-center justify-between gap-3">
-                          <span>{category}</span>
-                          <span className="rounded-md bg-ink-100 px-2 py-0.5 text-xs text-ink-600 dark:bg-ink-800 dark:text-ink-300">
-                            {categoryCounts[category] ?? 0}
-                          </span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  {tags.length ? (
-                    <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
-                        Tags
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {tags.map((tag) => (
-                          <button
-                            className={`tag-chip ${activeTags.includes(tag) ? 'tag-chip-active' : ''}`}
-                            key={tag}
-                            onClick={() => toggleTag(tag)}
-                            type="button"
-                          >
-                            {tag}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              </section>
-            ) : null}
-
-            {activeView === 'overview' || activeView === 'favorites' ? (
               <>
                 {!showingOverviewHome ? (
-                  <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
+                  <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-ink-600 dark:text-ink-300">
                       Showing <span className="font-semibold text-ink-950 dark:text-white">{visibleCheatsheets.length}</span>{' '}
                       entries
                     </p>
+                    {activeCategory !== 'All' || query ? (
+                      <button
+                        className="min-h-10 rounded-md border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+                        onClick={clearFilters}
+                        type="button"
+                      >
+                        Reset
+                      </button>
+                    ) : null}
                   </div>
                 ) : null}
 
@@ -321,7 +280,6 @@ function App() {
                         key={sheet.id}
                         sheet={sheet}
                         onToggleFavorite={() => toggleFavorite(sheet.id)}
-                        onToggleTag={toggleTag}
                       />
                     ))}
                   </section>

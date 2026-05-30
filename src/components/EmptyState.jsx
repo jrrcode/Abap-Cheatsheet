@@ -8,7 +8,7 @@ function EmptyState({ onClear }) {
       </div>
       <h2 className="mt-4 text-lg font-semibold text-ink-950 dark:text-white">No cheatsheets found</h2>
       <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-ink-600 dark:text-ink-300">
-        Try a broader keyword, remove a tag, or reset the category filter.
+        Try a broader keyword or reset the category filter.
       </p>
       <button
         className="mt-5 rounded-md bg-sap-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sap-800 dark:bg-sap-500 dark:hover:bg-sap-400"
