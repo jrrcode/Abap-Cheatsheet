@@ -55,7 +55,6 @@ export const tips = [
       'Check the driver table is not initial before FOR ALL ENTRIES.',
       'Avoid old internal tables WITH HEADER LINE.',
       'SQL LIKE uses %, while ABAP CP uses *.',
-      'Distinguish transport requests from tasks in E070 and E071.',
       'Use SE11 for object fields and SE09/SE10 for transport ownership.',
     ],
   },
@@ -73,22 +72,6 @@ export const tips = [
       'Transparent tables map directly to database tables.',
       'Pool and cluster tables are legacy concepts; avoid treating them as S/4HANA-ready design targets.',
       'Always confirm field names, key fields, and conversion exits in SE11 before coding.',
-    ],
-  },
-  {
-    id: 'tip-transport-request-vs-task',
-    title: 'Transport Request vs Task',
-    summary:
-      'Transport analysis is easier when you separate parent requests from developer tasks and understand where objects are currently assigned.',
-    checklist: [
-      'E070-TRKORR contains the request or task number.',
-      'E070-STRKORR contains the parent request for a task.',
-      'E070-TRSTATUS contains the transport status.',
-      'Objects can remain under unreleased tasks before they appear as expected at request level.',
-      'Use E071 to inspect object entries under a request or task.',
-      'Use E071K for transported table keys such as TABU entries.',
-      'Released and unreleased behavior depends on your team transport process and route.',
-      'Use SE09 or SE10 first for normal transport ownership checks.',
     ],
   },
   {
@@ -117,6 +100,146 @@ export const tips = [
       'Instance methods can hold required state without relying on global variables.',
       'Static methods are useful for stateless helper behavior.',
       'Use FORMs when maintaining classic reports that already follow that style.',
+    ],
+  },
+  {
+    id: 'tip-selection-screen-light',
+    title: 'Keep Selection Screen Logic Light',
+    summary:
+      'Selection-screen events should mainly validate input and control screen behavior, not run heavy business logic.',
+    checklist: [
+      'Use AT SELECTION-SCREEN for input validation.',
+      'Use AT SELECTION-SCREEN OUTPUT for dynamic screen modification.',
+      'Avoid expensive SELECTs in selection-screen events unless truly necessary.',
+      'Use clear MESSAGE TYPE E validation when input is invalid.',
+      'Move heavy reads and processing to START-OF-SELECTION or methods.',
+    ],
+  },
+  {
+    id: 'tip-message-behavior',
+    title: 'Message Behavior Reminders',
+    summary:
+      'ABAP message behavior depends on message type and processing context, especially on selection screens.',
+    checklist: [
+      "TYPE 'E' stops processing on the selection screen.",
+      "TYPE 'I' normally shows an information popup.",
+      "TYPE 'S' DISPLAY LIKE 'E' is useful when you want error styling without a hard stop in some report contexts.",
+      'Message class placeholders &1, &2, &3, and &4 are filled by MSGV1 to MSGV4.',
+      'Read SY-MSG fields immediately because later statements can overwrite them.',
+    ],
+  },
+  {
+    id: 'tip-lock-object-basics',
+    title: 'SAP Lock Object Basics',
+    summary:
+      'Lock objects help prevent multiple users from changing the same business data at the same time.',
+    checklist: [
+      'Lock objects are created in SE11.',
+      'Generated ENQUEUE_* and DEQUEUE_* function modules depend on the lock object name.',
+      'Check lock entries in SM12.',
+      'Always release locks when done.',
+      'Handle foreign locks with a useful user message.',
+    ],
+  },
+  {
+    id: 'tip-background-jobs',
+    title: 'Background Job Reminders',
+    summary:
+      'Background jobs run without normal foreground screen interaction, so reports must be designed for unattended execution.',
+    checklist: [
+      'Use SM36 to schedule jobs.',
+      'Use SM37 to monitor jobs.',
+      'Use variants for repeatable background execution.',
+      'Avoid frontend-dependent logic in background jobs.',
+      'WRITE output usually goes to spool for background runs.',
+    ],
+  },
+  {
+    id: 'tip-enhancements',
+    title: 'Enhancement Basics',
+    summary:
+      'Enhancements let you add custom logic without directly modifying SAP standard code.',
+    checklist: [
+      'BADIs are common in newer SAP systems.',
+      'User exits and customer exits are common in older ECC systems.',
+      'Use SMOD/CMOD for classic customer exits.',
+      'Use SE18/SE19 for BADI definition/implementation work.',
+      'Search existing enhancements before creating a new one.',
+      'Avoid direct modification of SAP standard unless formally approved.',
+    ],
+  },
+  {
+    id: 'tip-search-techniques',
+    title: 'ABAP Search Techniques',
+    summary:
+      'A large part of ABAP work is finding where existing logic, tables, messages, and enhancements already live.',
+    checklist: [
+      'Use where-used before changing code.',
+      'Use SE84 Repository Information System for repository searches.',
+      'Search by table name, field name, function module name, class name, and message text.',
+      'Use SE80 source search when maintaining classic code.',
+      'Use the debugger call stack to trace runtime flow.',
+      'Use TADIR when you need object directory context.',
+    ],
+  },
+  {
+    id: 'tip-file-processing',
+    title: 'Application Server File Processing',
+    summary:
+      'OPEN DATASET works with application-server files, not local PC files.',
+    checklist: [
+      'Use AL11 to inspect application server directories.',
+      'Check SY-SUBRC after OPEN DATASET, READ DATASET, TRANSFER, and CLOSE DATASET.',
+      'Frontend upload/download is different from server file processing.',
+      'Coordinate directories and authorizations with BASIS when needed.',
+      'BDC is old but still appears in legacy projects; prefer stable APIs when available.',
+    ],
+  },
+  {
+    id: 'tip-standard-code-reading',
+    title: 'Reading SAP Standard Code',
+    summary:
+      'Reading SAP standard code is a real ABAP skill: debug first, understand the flow, then decide whether an enhancement is appropriate.',
+    checklist: [
+      'Use breakpoints in standard code when authorized.',
+      'Read the call stack before changing anything.',
+      'Search standard includes from the main program.',
+      'Learn naming patterns used by the module you support.',
+      'Copy patterns carefully and adapt types/field names.',
+      'Do not modify SAP standard directly unless approved.',
+    ],
+  },
+  {
+    id: 'tip-revtrac-basics',
+    title: 'Rev-Trac Retrofit Reminders',
+    summary:
+      'Rev-Trac status and actual SAP object state can differ, so confirm the SAP object/version when retrofit results are unclear.',
+    checklist: [
+      'An RT is a Rev-Trac request/ticket in the retrofit workflow.',
+      'SCEN_MAN usually means manual handling is required.',
+      'Some object types may be excluded from retrofit.',
+      'Empty RTs should usually be filtered out by checking transport assignment details.',
+      'Always confirm Rev-Trac table meanings and custom function modules in the actual system.',
+    ],
+  },
+  {
+    id: 'tip-first-job-abap',
+    title: 'Junior ABAP First Job Checklist',
+    summary:
+      'Focus first on the ABAP skills that help you safely read, debug, and change existing enterprise code.',
+    checklist: [
+      'Master internal tables first.',
+      'Learn debugging before trying to memorize everything.',
+      'Avoid SELECT inside LOOP.',
+      'Always check SY-SUBRC after important operations.',
+      'Learn SE11 table structures before coding SELECTs.',
+      'Prefer typed parameters over generic tables.',
+      'Keep selection-screen logic light.',
+      'Use INNER JOIN when you need records existing in both tables.',
+      'Use LEFT JOIN when you need all header records even if details are missing.',
+      'Read existing code patterns in the same system before inventing new ones.',
+      'Ask functional meaning before changing technical logic.',
+      'Confirm local vs remote execution when RFC DESTINATION is involved.',
     ],
   },
 ];

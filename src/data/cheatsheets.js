@@ -982,87 +982,6 @@ DATA lt_orders TYPE STANDARD TABLE OF vbak WITH EMPTY KEY.`,
     relatedTopics: ['DDIC Types', 'Open SQL', 'S/4HANA'],
   },
   {
-    id: 'transport-e070-request-header',
-    title: 'Transport Request Header: E070',
-    category: 'Transport Tables',
-    subcategory: 'E070',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'E070 is a common transport organizer table; interpret status according to your landscape process.',
-    difficulty: 'Intermediate',
-    explanation: 'Use E070 to inspect transport request/task header information such as request number, parent request, status, and owner.',
-    code: `SELECT SINGLE trkorr strkorr trstatus as4user
-  FROM e070
-  INTO @DATA(ls_request)
-  WHERE trkorr = @p_trkorr.
-
-"Tasks under a request: E070-STRKORR points to the parent request.
-SELECT trkorr trstatus as4user
-  FROM e070
-  INTO TABLE @DATA(lt_tasks)
-  WHERE strkorr = @p_trkorr.`,
-    notes: [
-      'E070-TRKORR is the request/task number.',
-      'E070-STRKORR contains the parent request for a task.',
-      'E070-TRSTATUS contains the transport status.',
-    ],
-    commonMistakes: [
-      'Confusing request numbers and task numbers.',
-      'Checking the wrong client or system.',
-      'Assuming status interpretation without knowing your release process.',
-    ],
-    relatedTopics: ['E071', 'E071K', 'SE09 / SE10'],
-  },
-  {
-    id: 'transport-e071-objects',
-    title: 'Transport Objects: E071',
-    category: 'Transport Tables',
-    subcategory: 'E071',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'E071 is commonly used for objects assigned to transport requests/tasks.',
-    difficulty: 'Intermediate',
-    explanation: 'Use E071 to inspect transported objects and object names under a request or task.',
-    code: `SELECT trkorr pgmid object obj_name
-  FROM e071
-  INTO TABLE @DATA(lt_objects)
-  WHERE trkorr = @p_trkorr.`,
-    notes: [
-      'Objects may sit under tasks before task release.',
-      'Object type PROG is commonly used for ABAP programs.',
-      'Use SE09/SE10 for normal transport analysis when possible.',
-    ],
-    commonMistakes: [
-      'Looking only at the parent request and missing task-level objects.',
-      'Using wrong object type names.',
-      'Treating E071 as the only source of transport truth without context.',
-    ],
-    relatedTopics: ['E070', 'Transport Organizer', 'DDIC'],
-  },
-  {
-    id: 'transport-e071k-table-keys',
-    title: 'Transport Table Keys: E071K',
-    category: 'Transport Tables',
-    subcategory: 'E071K',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'E071K is commonly used for table key entries, especially TABU-style transports.',
-    difficulty: 'Intermediate',
-    explanation: 'Use E071K to inspect table-key details for transported table entries.',
-    code: `SELECT trkorr pgmid object objname tabkey
-  FROM e071k
-  INTO TABLE @DATA(lt_tabu_keys)
-  WHERE trkorr = @p_trkorr.`,
-    notes: [
-      'TABKEY content must be interpreted according to table key structure.',
-      'Use with E071 to understand the transported object context.',
-      'Be careful when analyzing customizing transports across clients.',
-    ],
-    commonMistakes: [
-      'Reading TABKEY as plain business text without decoding key structure.',
-      'Ignoring client-dependent keys.',
-      'Missing related E071 object entries.',
-    ],
-    relatedTopics: ['E071', 'Customizing', 'SE10'],
-  },
-  {
     id: 'alv-classic-reuse',
     title: 'Classic ALV: REUSE_ALV_GRID_DISPLAY',
     category: 'ALV',
@@ -2282,5 +2201,984 @@ DATA(lv_count) = lo_service->get_count( ).`,
       'Doing expensive hidden work in a simple getter.',
     ],
     relatedTopics: ['OOP ABAP', 'Method Parameters', 'Modern ABAP'],
+  },
+  {
+    id: 'selection-block-pushbutton',
+    title: 'Selection Screen Block and Pushbutton',
+    category: 'Selection Screens',
+    subcategory: 'Blocks and Buttons',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'SELECTION-SCREEN blocks and pushbuttons are classic report selection-screen syntax.',
+    difficulty: 'Beginner',
+    explanation: 'Use blocks to group related input fields and pushbuttons for small selection-screen actions.',
+    code: `SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-t01.
+PARAMETERS p_bukrs TYPE bukrs OBLIGATORY DEFAULT '1000'.
+SELECT-OPTIONS s_vbeln FOR vbak-vbeln NO INTERVALS.
+PARAMETERS p_hidden TYPE char10 NO-DISPLAY.
+SELECTION-SCREEN PUSHBUTTON /1(20) btn_chk USER-COMMAND check.
+SELECTION-SCREEN END OF BLOCK b1.
+
+INITIALIZATION.
+  btn_chk = 'Check input'.
+
+AT SELECTION-SCREEN.
+  IF sy-ucomm = 'CHECK'.
+    MESSAGE 'Input checked' TYPE 'S'.
+  ENDIF.`,
+    notes: [
+      'NO INTERVALS restricts SELECT-OPTIONS to single LOW values.',
+      'NO-DISPLAY hides technical parameters from the screen.',
+      'Pushbuttons use SY-UCOMM to identify the user action.',
+    ],
+    commonMistakes: [
+      'Forgetting to set pushbutton text in INITIALIZATION.',
+      'Using selection-screen buttons for heavy business processing.',
+      'Assuming NO-DISPLAY means a value cannot be passed programmatically.',
+    ],
+    relatedTopics: ['PARAMETERS', 'SELECT-OPTIONS', 'AT SELECTION-SCREEN'],
+  },
+  {
+    id: 'selection-at-selection-screen-on',
+    title: 'AT SELECTION-SCREEN ON Field',
+    category: 'Selection Screens',
+    subcategory: 'Validation',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'AT SELECTION-SCREEN ON field validation is classic report syntax.',
+    difficulty: 'Beginner',
+    explanation: 'Use field-specific validation when one input has its own rule and error focus.',
+    code: `PARAMETERS p_bukrs TYPE bukrs OBLIGATORY.
+
+AT SELECTION-SCREEN ON p_bukrs.
+  SELECT SINGLE bukrs
+    FROM t001
+    INTO @DATA(lv_bukrs)
+    WHERE bukrs = @p_bukrs.
+
+  IF sy-subrc <> 0.
+    MESSAGE 'Company code does not exist' TYPE 'E'.
+  ENDIF.`,
+    notes: [
+      'TYPE E returns focus to the invalid field.',
+      'Keep database checks selective.',
+      'Use DDIC checks/search helps when they already solve the problem.',
+    ],
+    commonMistakes: [
+      'Running broad SELECTs during field validation.',
+      'Putting cross-field validation into a field-specific event.',
+      'Using warning messages for invalid required data.',
+    ],
+    relatedTopics: ['Selection Validation', 'Messages', 'Open SQL'],
+  },
+  {
+    id: 'message-basic-types',
+    title: 'MESSAGE Basic Types',
+    category: 'Message Handling',
+    subcategory: 'MESSAGE',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'MESSAGE text TYPE is classic-compatible. Runtime behavior depends on context such as selection screen or report processing.',
+    difficulty: 'Beginner',
+    explanation: 'Use MESSAGE to communicate success, information, warning, and error states to the user.',
+    code: `MESSAGE 'Saved successfully' TYPE 'S'.
+MESSAGE 'Please check the input' TYPE 'I'.
+MESSAGE 'This value is unusual' TYPE 'W'.
+MESSAGE 'Company code is required' TYPE 'E'.
+MESSAGE 'No data found' TYPE 'S' DISPLAY LIKE 'E'.`,
+    notes: [
+      "TYPE 'E' stops processing in selection-screen validation.",
+      "TYPE 'I' usually shows an information popup.",
+      "TYPE 'S' DISPLAY LIKE 'E' looks like an error but behaves like a status message.",
+    ],
+    commonMistakes: [
+      'Using hard stops where a status message is enough.',
+      'Showing technical messages directly to business users.',
+      'Forgetting that message behavior changes by processing context.',
+    ],
+    relatedTopics: ['Selection Screens', 'SY-MSG Fields', 'TRY/CATCH'],
+  },
+  {
+    id: 'message-class-with',
+    title: 'MESSAGE ID TYPE NUMBER WITH',
+    category: 'Message Handling',
+    subcategory: 'Message Class',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Message classes are classic-compatible and support placeholders such as &1 through &4.',
+    difficulty: 'Beginner',
+    explanation: 'Use message classes for reusable, translatable messages with variables.',
+    code: `MESSAGE ID 'ZMSG' TYPE 'E' NUMBER '001'
+  WITH p_bukrs sy-uname.
+
+"Short form when message class is known.
+MESSAGE e001(zmsg) WITH p_bukrs sy-uname.`,
+    notes: [
+      'Message placeholders &1 to &4 are filled from WITH values.',
+      'Use message classes for production text.',
+      'Keep variable values meaningful and safe for users.',
+    ],
+    commonMistakes: [
+      'Passing variables in the wrong placeholder order.',
+      'Using hard-coded text everywhere.',
+      'Using the wrong message class or number.',
+    ],
+    relatedTopics: ['SY-MSG Fields', 'Selection Validation', 'Error Handling'],
+  },
+  {
+    id: 'message-symsg-read',
+    title: 'Read SY-MSG Fields',
+    category: 'Message Handling',
+    subcategory: 'SY-MSG',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'SY-MSGID, SY-MSGNO, and SY-MSGV1 to SY-MSGV4 are classic system fields.',
+    difficulty: 'Beginner',
+    explanation: 'Read SY-MSG fields after a statement or function module sets message context.',
+    code: `DATA ls_log TYPE bapiret2.
+
+ls_log-type       = sy-msgty.
+ls_log-id         = sy-msgid.
+ls_log-number     = sy-msgno.
+ls_log-message_v1 = sy-msgv1.
+ls_log-message_v2 = sy-msgv2.
+ls_log-message_v3 = sy-msgv3.
+ls_log-message_v4 = sy-msgv4.
+
+MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno
+  WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+  INTO DATA(lv_message_text).`,
+    notes: [
+      'SY-MSG fields can be overwritten by later statements.',
+      'Use MESSAGE ... INTO to store formatted text in a variable.',
+      'BAPIRET2 is a common message-return structure.',
+    ],
+    commonMistakes: [
+      'Reading SY-MSG fields too late.',
+      'Logging only message text and losing ID/number.',
+      'Ignoring variable placeholders.',
+    ],
+    relatedTopics: ['BAPIRET2', 'Function Modules', 'Message Class'],
+  },
+  {
+    id: 'message-form-changing',
+    title: 'Return Message from FORM',
+    category: 'Message Handling',
+    subcategory: 'FORM Messages',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'FORM/CHANGING is classic-compatible; methods are preferred for new code.',
+    difficulty: 'Beginner',
+    explanation: 'Use CHANGING to return a simple message from legacy FORM logic.',
+    code: `DATA lv_message TYPE string.
+
+PERFORM validate_bukrs USING p_bukrs CHANGING lv_message.
+
+IF lv_message IS NOT INITIAL.
+  MESSAGE lv_message TYPE 'E'.
+ENDIF.
+
+FORM validate_bukrs
+  USING    iv_bukrs   TYPE bukrs
+  CHANGING cv_message TYPE string.
+  IF iv_bukrs IS INITIAL.
+    cv_message = 'Company code is required'.
+  ENDIF.
+ENDFORM.`,
+    notes: [
+      'Keep FORM parameters typed.',
+      'Use CHANGING for values that the FORM updates.',
+      'For new code, prefer a method returning a result or message object.',
+    ],
+    commonMistakes: [
+      'Using global message variables instead of parameters.',
+      'Mismatching PERFORM and FORM parameter order.',
+      'Returning generic text where message classes are required.',
+    ],
+    relatedTopics: ['FORM / PERFORM', 'Messages', 'Methods'],
+  },
+  {
+    id: 'lock-enqueue',
+    title: 'ENQUEUE Lock Object Call',
+    category: 'SAP Lock Objects',
+    subcategory: 'ENQUEUE',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Lock object function module names are generated from SE11 lock objects and vary by object name.',
+    difficulty: 'Intermediate',
+    explanation: 'Call the generated ENQUEUE function module before changing shared business data.',
+    code: `CALL FUNCTION 'ENQUEUE_EZMY_OBJECT'
+  EXPORTING
+    mode_zmy_table = 'E'
+    mandt          = sy-mandt
+    key_field      = lv_key
+  EXCEPTIONS
+    foreign_lock   = 1
+    system_failure = 2
+    OTHERS         = 3.
+
+IF sy-subrc <> 0.
+  MESSAGE 'Object is locked by another user' TYPE 'E'.
+ENDIF.`,
+    notes: [
+      'Lock objects are created in SE11.',
+      'Generated function module names depend on the lock object.',
+      'SM12 shows current lock entries.',
+    ],
+    commonMistakes: [
+      'Changing data without locking when concurrent users are possible.',
+      'Ignoring FOREIGN_LOCK.',
+      'Using the wrong generated lock function module.',
+    ],
+    relatedTopics: ['DEQUEUE', 'SM12', 'Authorization'],
+  },
+  {
+    id: 'lock-dequeue',
+    title: 'DEQUEUE Lock Object Call',
+    category: 'SAP Lock Objects',
+    subcategory: 'DEQUEUE',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Generated DEQUEUE function modules are classic lock-object APIs.',
+    difficulty: 'Intermediate',
+    explanation: 'Release a lock with the generated DEQUEUE function module when your update logic is complete.',
+    code: `CALL FUNCTION 'DEQUEUE_EZMY_OBJECT'
+  EXPORTING
+    mode_zmy_table = 'E'
+    mandt          = sy-mandt
+    key_field      = lv_key.`,
+    notes: [
+      'Always release locks when done.',
+      'Use TRY/CATCH or cleanup sections when errors can occur between lock and unlock.',
+      'Some locks are released automatically at transaction end, but explicit cleanup is clearer.',
+    ],
+    commonMistakes: [
+      'Forgetting to unlock after an error path.',
+      'Unlocking with different key values than the lock call.',
+      'Assuming locks protect data across every custom path automatically.',
+    ],
+    relatedTopics: ['ENQUEUE', 'TRY/CATCH', 'SM12'],
+  },
+  {
+    id: 'job-submit-via-job',
+    title: 'SUBMIT Report VIA JOB',
+    category: 'Jobs and Variants',
+    subcategory: 'Background Jobs',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'JOB_OPEN, SUBMIT VIA JOB, and JOB_CLOSE are classic background job APIs.',
+    difficulty: 'Intermediate',
+    explanation: 'Use JOB_OPEN and JOB_CLOSE with SUBMIT VIA JOB to schedule a report as a background job.',
+    code: `DATA lv_jobname  TYPE tbtcjob-jobname VALUE 'Z_DEMO_JOB'.
+DATA lv_jobcount TYPE tbtcjob-jobcount.
+
+CALL FUNCTION 'JOB_OPEN'
+  EXPORTING
+    jobname  = lv_jobname
+  IMPORTING
+    jobcount = lv_jobcount.
+
+SUBMIT z_target_report
+  WITH p_bukrs = p_bukrs
+  VIA JOB lv_jobname NUMBER lv_jobcount
+  AND RETURN.
+
+CALL FUNCTION 'JOB_CLOSE'
+  EXPORTING
+    jobname   = lv_jobname
+    jobcount  = lv_jobcount
+    strtimmed = abap_true.`,
+    notes: [
+      'Use SM37 to monitor job execution.',
+      'Background jobs do not behave like foreground screens.',
+      'Avoid frontend-dependent logic in submitted background reports.',
+    ],
+    commonMistakes: [
+      'Forgetting JOB_CLOSE.',
+      'Expecting selection-screen interaction in background.',
+      'Not checking job logs/spool after scheduling.',
+    ],
+    relatedTopics: ['SUBMIT', 'Variants', 'Spool'],
+  },
+  {
+    id: 'job-submit-and-return',
+    title: 'SUBMIT Report AND RETURN',
+    category: 'Jobs and Variants',
+    subcategory: 'SUBMIT',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'SUBMIT is classic-compatible for executable reports.',
+    difficulty: 'Beginner',
+    explanation: 'Use SUBMIT ... AND RETURN to run another report and return to the caller.',
+    code: `SUBMIT z_target_report
+  WITH p_bukrs = p_bukrs
+  WITH s_vbeln IN s_vbeln
+  AND RETURN.`,
+    notes: [
+      'WITH passes a parameter value.',
+      'WITH select-option IN range passes range content.',
+      'AND RETURN continues the caller after the submitted report finishes.',
+    ],
+    commonMistakes: [
+      'Using wrong parameter/select-option names from the target report.',
+      'Forgetting AND RETURN when the caller must continue.',
+      'Submitting reports that require foreground-only behavior.',
+    ],
+    relatedTopics: ['Variants', 'Selection Screens', 'Background Jobs'],
+  },
+  {
+    id: 'variant-submit-selection-set',
+    title: 'SUBMIT with Selection Variant',
+    category: 'Jobs and Variants',
+    subcategory: 'Variants',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'USING SELECTION-SET is classic-compatible for report variants.',
+    difficulty: 'Beginner',
+    explanation: 'Use a saved report variant to run another report with repeatable selection values.',
+    code: `DATA lv_variant TYPE raldb_vari VALUE 'DAILY_RUN'.
+
+SUBMIT z_target_report
+  USING SELECTION-SET lv_variant
+  AND RETURN.`,
+    notes: [
+      'Variants save selection-screen values.',
+      'They are useful for background jobs.',
+      'Check variants in SE38 or SA38.',
+    ],
+    commonMistakes: [
+      'Using a variant that belongs to another report.',
+      'Forgetting that variants may contain old dates or ranges.',
+      'Assuming every variant exists in every system.',
+    ],
+    relatedTopics: ['SUBMIT', 'Background Jobs', 'Selection Screens'],
+  },
+  {
+    id: 'spool-write-output',
+    title: 'WRITE Output for Background Spool',
+    category: 'Spool and Printing',
+    subcategory: 'Spool',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'WRITE output is classic list output and commonly creates spool output in background jobs.',
+    difficulty: 'Beginner',
+    explanation: 'Use simple WRITE output for background-safe logs that can be reviewed in spool.',
+    code: `WRITE: / 'Run date:', sy-datum.
+WRITE: / 'Run time:', sy-uzeit.
+WRITE: / 'Records processed:', lv_count.
+
+LOOP AT lt_messages INTO DATA(ls_message).
+  WRITE: / ls_message.
+ENDLOOP.`,
+    notes: [
+      'SP01 is used to check spool requests.',
+      'Background job WRITE output usually goes to spool.',
+      'Keep spool output concise.',
+    ],
+    commonMistakes: [
+      'Using GUI popups in background jobs.',
+      'Writing huge spool logs that are hard to read.',
+      'Expecting ALV interaction in background.',
+    ],
+    relatedTopics: ['Background Jobs', 'SM37', 'WRITE'],
+  },
+  {
+    id: 'file-open-read-close',
+    title: 'Read Server File with OPEN DATASET',
+    category: 'File Processing',
+    subcategory: 'Application Server Files',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'OPEN DATASET reads application-server files, not local frontend PC files.',
+    difficulty: 'Intermediate',
+    explanation: 'Use OPEN DATASET, READ DATASET, and CLOSE DATASET for application server file processing.',
+    code: `DATA lv_line TYPE string.
+
+OPEN DATASET lv_path FOR INPUT IN TEXT MODE ENCODING DEFAULT.
+IF sy-subrc <> 0.
+  MESSAGE 'Could not open server file' TYPE 'E'.
+ENDIF.
+
+DO.
+  READ DATASET lv_path INTO lv_line.
+  IF sy-subrc <> 0.
+    EXIT.
+  ENDIF.
+  APPEND lv_line TO lt_lines.
+ENDDO.
+
+CLOSE DATASET lv_path.`,
+    notes: [
+      'AL11 shows application server directories.',
+      'Check SY-SUBRC after file operations.',
+      'Frontend upload is different from OPEN DATASET.',
+    ],
+    commonMistakes: [
+      'Trying to read a local PC path with OPEN DATASET.',
+      'Forgetting CLOSE DATASET.',
+      'Ignoring file authorization/path issues.',
+    ],
+    relatedTopics: ['AL11', 'Background Jobs', 'SY-SUBRC'],
+  },
+  {
+    id: 'file-transfer',
+    title: 'Write Server File with TRANSFER',
+    category: 'File Processing',
+    subcategory: 'Application Server Files',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'TRANSFER writes to an open application-server dataset.',
+    difficulty: 'Intermediate',
+    explanation: 'Use TRANSFER to write lines to a file on the application server.',
+    code: `OPEN DATASET lv_path FOR OUTPUT IN TEXT MODE ENCODING DEFAULT.
+IF sy-subrc <> 0.
+  MESSAGE 'Could not open output file' TYPE 'E'.
+ENDIF.
+
+LOOP AT lt_lines INTO DATA(lv_line).
+  TRANSFER lv_line TO lv_path.
+  IF sy-subrc <> 0.
+    MESSAGE 'Could not write file line' TYPE 'E'.
+  ENDIF.
+ENDLOOP.
+
+CLOSE DATASET lv_path.`,
+    notes: [
+      'Use application-server paths, not frontend paths.',
+      'Coordinate directories and permissions with BASIS when needed.',
+      'Use clear file naming for background jobs.',
+    ],
+    commonMistakes: [
+      'Overwriting files unintentionally.',
+      'Skipping SY-SUBRC checks after TRANSFER.',
+      'Writing sensitive data to unsecured paths.',
+    ],
+    relatedTopics: ['OPEN DATASET', 'AL11', 'Background Jobs'],
+  },
+  {
+    id: 'bdc-call-transaction',
+    title: 'BDC CALL TRANSACTION Template',
+    category: 'File Processing',
+    subcategory: 'Batch Input',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'BDC is old but still appears in legacy projects. Prefer APIs/BAPIs where available.',
+    difficulty: 'Advanced',
+    explanation: 'Use BDCDATA with CALL TRANSACTION for legacy screen-based automation when no better API exists.',
+    code: `DATA lt_bdc TYPE STANDARD TABLE OF bdcdata WITH EMPTY KEY.
+DATA ls_bdc TYPE bdcdata.
+
+ls_bdc-program  = 'SAPLDEMO'.
+ls_bdc-dynpro   = '0100'.
+ls_bdc-dynbegin = abap_true.
+APPEND ls_bdc TO lt_bdc.
+
+CLEAR ls_bdc.
+ls_bdc-fnam = 'BDC_OKCODE'.
+ls_bdc-fval = '=SAVE'.
+APPEND ls_bdc TO lt_bdc.
+
+CALL TRANSACTION 'ZTXN' USING lt_bdc MODE 'N' UPDATE 'S'.`,
+    notes: [
+      'BDC depends on screen flow and can break when screens change.',
+      'Prefer BAPIs or released APIs when available.',
+      'Use MODE A for visible debugging and MODE N for background-style execution.',
+    ],
+    commonMistakes: [
+      'Using BDC when a stable API exists.',
+      'Forgetting dynpro begin rows.',
+      'Not capturing messages after CALL TRANSACTION.',
+    ],
+    relatedTopics: ['Legacy ABAP', 'BAPI', 'File Processing'],
+  },
+  {
+    id: 'auth-check-object',
+    title: 'AUTHORITY-CHECK OBJECT',
+    category: 'Authorization',
+    subcategory: 'AUTHORITY-CHECK',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'AUTHORITY-CHECK is classic-compatible. Authorization object design is maintained by security/BASIS teams.',
+    difficulty: 'Intermediate',
+    explanation: 'Use AUTHORITY-CHECK to verify whether the user has permission for an object/value combination.',
+    code: `AUTHORITY-CHECK OBJECT 'S_TCODE'
+  ID 'TCD' FIELD 'SE38'.
+
+IF sy-subrc <> 0.
+  MESSAGE 'You are not authorized for this transaction' TYPE 'E'.
+ENDIF.
+
+AUTHORITY-CHECK OBJECT 'Z_OBJECT'
+  ID 'ACTVT' FIELD '03'
+  ID 'BUKRS' FIELD p_bukrs.`,
+    notes: [
+      'AUTHORITY-CHECK does not automatically stop the program.',
+      'Always check SY-SUBRC yourself.',
+      'ACTVT 03 commonly means display, but confirm project standards.',
+    ],
+    commonMistakes: [
+      'Ignoring SY-SUBRC after AUTHORITY-CHECK.',
+      'Hardcoding authorization bypasses.',
+      'Using the wrong authorization field values.',
+    ],
+    relatedTopics: ['Messages', 'Security', 'SY-SUBRC'],
+  },
+  {
+    id: 'date-time-basics',
+    title: 'Date and Time Basics',
+    category: 'Date and String Handling',
+    subcategory: 'Date and Time',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'SY-DATUM, SY-UZEIT, DATS, TIMS, and simple date arithmetic are classic-compatible.',
+    difficulty: 'Beginner',
+    explanation: 'Use proper ABAP date/time fields instead of storing dates as plain text.',
+    code: `DATA lv_today TYPE sy-datum.
+DATA lv_time  TYPE sy-uzeit.
+
+lv_today = sy-datum.
+lv_time  = sy-uzeit.
+
+DATA(lv_tomorrow) = sy-datum + 1.
+DATA(lv_yesterday) = sy-datum - 1.
+
+IF lv_today >= p_date.
+  WRITE: / 'Date reached'.
+ENDIF.`,
+    notes: [
+      'SY-DATUM is the system date.',
+      'SY-UZEIT is the system time.',
+      'Be careful with time zones in distributed systems.',
+    ],
+    commonMistakes: [
+      'Using character fields for date calculations.',
+      'Ignoring timezone requirements.',
+      'Comparing dates after formatting them as text.',
+    ],
+    relatedTopics: ['Timestamps', 'String Templates', 'Selection Screens'],
+  },
+  {
+    id: 'date-timestamp',
+    title: 'Timestamp Template',
+    category: 'Date and String Handling',
+    subcategory: 'Date and Time',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'GET TIME STAMP FIELD is widely used. Timestamp handling can vary by timezone/context requirements.',
+    difficulty: 'Beginner',
+    explanation: 'Use timestamps when date and time need to be stored together.',
+    code: `DATA lv_timestamp TYPE timestampl.
+
+GET TIME STAMP FIELD lv_timestamp.
+
+WRITE: / lv_timestamp.`,
+    notes: [
+      'Use timestamps for technical logging and cross-system timing.',
+      'Clarify timezone expectations for business logic.',
+      'Use proper timestamp types rather than concatenated date/time text.',
+    ],
+    commonMistakes: [
+      'Concatenating SY-DATUM and SY-UZEIT as a timestamp substitute.',
+      'Ignoring timezone conversion requirements.',
+      'Using timestamps for business dates where DATS is clearer.',
+    ],
+    relatedTopics: ['Date Basics', 'Logging', 'Background Jobs'],
+  },
+  {
+    id: 'string-concatenate-template',
+    title: 'CONCATENATE and String Templates',
+    category: 'Date and String Handling',
+    subcategory: 'Strings',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'CONCATENATE is classic-compatible. String templates require modern ABAP.',
+    difficulty: 'Beginner',
+    explanation: 'Use CONCATENATE in legacy code and string templates in modern code when they improve readability.',
+    code: `CONCATENATE lv_first lv_last INTO lv_fullname SEPARATED BY space.
+
+DATA(lv_text) = |Customer { lv_kunnr }: { lv_name }|.`,
+    notes: [
+      'String templates are concise for readable text assembly.',
+      'CONCATENATE remains common in legacy code.',
+      'Use SEPARATED BY to avoid manual spaces.',
+    ],
+    commonMistakes: [
+      'Forgetting spaces between concatenated values.',
+      'Using string templates on unsupported releases.',
+      'Building SQL strings manually instead of using Open SQL variables.',
+    ],
+    relatedTopics: ['Modern ABAP', 'Messages', 'Conversion Exits'],
+  },
+  {
+    id: 'string-clean-split-replace',
+    title: 'CONDENSE, SPLIT, REPLACE, TRANSLATE',
+    category: 'Date and String Handling',
+    subcategory: 'Strings',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'These string statements are classic-compatible.',
+    difficulty: 'Beginner',
+    explanation: 'Use common string statements to normalize, split, replace, and change case.',
+    code: `CONDENSE lv_text.
+CONDENSE lv_text NO-GAPS.
+
+SPLIT lv_csv AT ',' INTO TABLE DATA(lt_parts).
+REPLACE ALL OCCURRENCES OF '-' IN lv_text WITH '/'.
+
+TRANSLATE lv_text TO UPPER CASE.
+TRANSLATE lv_text TO LOWER CASE.
+SHIFT lv_text LEFT DELETING LEADING space.`,
+    notes: [
+      'CONDENSE removes extra spaces; NO-GAPS removes all spaces.',
+      'SPLIT INTO TABLE is useful for delimited text.',
+      'TRANSLATE is simple for case conversion.',
+    ],
+    commonMistakes: [
+      'Using NO-GAPS when spaces are meaningful.',
+      'Forgetting that SPLIT keeps empty parts depending on content and release behavior.',
+      'Replacing too broadly without checking the result.',
+    ],
+    relatedTopics: ['File Processing', 'String Templates', 'Messages'],
+  },
+  {
+    id: 'string-offset-patterns',
+    title: 'strlen, Offset, CP, and CS',
+    category: 'Date and String Handling',
+    subcategory: 'Strings',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Offset/length access, CP, CS, and strlen are common ABAP string patterns.',
+    difficulty: 'Beginner',
+    explanation: 'Use string length, offset access, and ABAP pattern operators for simple text checks.',
+    code: `DATA(lv_len) = strlen( lv_text ).
+DATA(lv_prefix) = lv_text+0(3).
+
+IF lv_text CP 'ABC*'.
+  WRITE: / 'Starts with ABC'.
+ENDIF.
+
+IF lv_text CS 'ERROR'.
+  WRITE: / 'Contains ERROR'.
+ENDIF.`,
+    notes: [
+      'ABAP CP uses * as a wildcard.',
+      'CS means contains string.',
+      'SQL LIKE uses %, not *.',
+    ],
+    commonMistakes: [
+      'Using SQL wildcard % with ABAP CP.',
+      'Using offset/length beyond the actual string length.',
+      'Confusing CS contains with CP pattern matching.',
+    ],
+    relatedTopics: ['LIKE and NOT LIKE', 'Common Mistakes', 'Open SQL'],
+  },
+  {
+    id: 'conversion-alpha-template',
+    title: 'ALPHA Conversion Templates',
+    category: 'Conversion Exits',
+    subcategory: 'ALPHA',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'String-template ALPHA formatting is modern ABAP. Function modules are useful in older code.',
+    difficulty: 'Beginner',
+    explanation: 'Use ALPHA conversion for business keys where users enter values without leading zeros.',
+    code: `"Modern syntax.
+DATA(lv_internal) = |{ lv_kunnr ALPHA = IN }|.
+DATA(lv_external) = |{ lv_kunnr ALPHA = OUT }|.
+
+"Classic function module.
+CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+  EXPORTING input  = lv_kunnr
+  IMPORTING output = lv_kunnr_internal.
+
+CALL FUNCTION 'CONVERSION_EXIT_ALPHA_OUTPUT'
+  EXPORTING input  = lv_kunnr_internal
+  IMPORTING output = lv_kunnr_external.`,
+    notes: [
+      'ALPHA IN adds leading zeros for internal format.',
+      'ALPHA OUT removes leading zeros for display.',
+      'Use DDIC conversion exits where available.',
+    ],
+    commonMistakes: [
+      'Selecting database keys with unconverted user input.',
+      'Applying ALPHA to fields that do not use ALPHA conversion.',
+      'Mixing internal and external formats in comparisons.',
+    ],
+    relatedTopics: ['DDIC', 'String Templates', 'Open SQL'],
+  },
+  {
+    id: 'include-statement',
+    title: 'INCLUDE Statement',
+    category: 'Includes',
+    subcategory: 'Classic Program Structure',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'INCLUDE is classic-compatible and common in older reports and module pools.',
+    difficulty: 'Beginner',
+    explanation: 'Use INCLUDE to split classic programs into reusable source sections. Includes are not independent programs.',
+    code: `REPORT z_demo_program.
+
+INCLUDE z_demo_top. "Global data declarations
+INCLUDE z_demo_f01. "FORM routines
+INCLUDE z_demo_o01. "PBO modules
+INCLUDE z_demo_i01. "PAI modules`,
+    notes: [
+      'TOP includes often contain global data.',
+      'F01 includes often contain FORM routines.',
+      'O01 and I01 are common module pool include naming patterns for PBO/PAI.',
+    ],
+    commonMistakes: [
+      'Editing includes without understanding main program flow.',
+      'Treating an include as an executable program.',
+      'Creating too much hidden dependency through global data.',
+    ],
+    relatedTopics: ['Module Pool', 'FORM / PERFORM', 'Legacy ABAP'],
+  },
+  {
+    id: 'standard-users-tables',
+    title: 'Common User Tables: USR02, USR21, ADRP',
+    category: 'SAP Standard Tables',
+    subcategory: 'Users',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Table availability and authorization depend on system and release. Do not update standard tables directly.',
+    difficulty: 'Intermediate',
+    explanation: 'Use these tables for read-only user identity analysis when standard APIs are not available.',
+    code: `SELECT bname gltgb ustyp
+  FROM usr02
+  INTO TABLE @DATA(lt_users)
+  WHERE bname IN @s_bname.
+
+SELECT bname persnumber
+  FROM usr21
+  INTO TABLE @DATA(lt_user_persons)
+  WHERE bname IN @s_bname.
+
+SELECT persnumber name_first name_last
+  FROM adrp
+  INTO TABLE @DATA(lt_names)
+  FOR ALL ENTRIES IN @lt_user_persons
+  WHERE persnumber = @lt_user_persons-persnumber.`,
+    notes: [
+      'USR02 stores user master logon-related data.',
+      'USR21 links user IDs to person/address numbers.',
+      'ADRP stores person name data.',
+    ],
+    commonMistakes: [
+      'Updating standard SAP tables directly.',
+      'Ignoring authorizations and privacy requirements.',
+      'Using FOR ALL ENTRIES without an empty-table guard.',
+    ],
+    relatedTopics: ['Open SQL', 'Authorization', 'FOR ALL ENTRIES'],
+  },
+  {
+    id: 'standard-ddic-tables',
+    title: 'Common DDIC Tables: DD02L, DD03L, DD04L',
+    category: 'SAP Standard Tables',
+    subcategory: 'DDIC',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'DDIC metadata tables are common, but use SE11/DDIC APIs when they are more appropriate.',
+    difficulty: 'Intermediate',
+    explanation: 'Use DDIC metadata tables for read-only repository analysis.',
+    code: `SELECT tabname tabclass
+  FROM dd02l
+  INTO TABLE @DATA(lt_tables)
+  WHERE tabname IN @s_tabname.
+
+SELECT tabname fieldname rollname keyflag
+  FROM dd03l
+  INTO TABLE @DATA(lt_fields)
+  WHERE tabname IN @s_tabname.
+
+SELECT rollname domname datatype leng
+  FROM dd04l
+  INTO TABLE @DATA(lt_data_elements)
+  WHERE rollname IN @s_rollname.`,
+    notes: [
+      'DD02L contains table metadata.',
+      'DD03L contains table field metadata.',
+      'DD04L contains data element metadata.',
+    ],
+    commonMistakes: [
+      'Assuming metadata meanings without checking SE11.',
+      'Updating DDIC metadata tables directly.',
+      'Reading inactive/generated states without understanding context.',
+    ],
+    relatedTopics: ['SE11', 'DDIC Object Types', 'Search Techniques'],
+  },
+  {
+    id: 'standard-repository-tables',
+    title: 'Repository Tables: TADIR and TRDIR',
+    category: 'SAP Standard Tables',
+    subcategory: 'Repository',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'TADIR and TRDIR are common repository tables. Interpret object ownership and generated entries carefully.',
+    difficulty: 'Intermediate',
+    explanation: 'Use repository tables for read-only object discovery when repository tools are not enough.',
+    code: `SELECT pgmid object obj_name devclass srcsystem
+  FROM tadir
+  INTO TABLE @DATA(lt_objects)
+  WHERE obj_name IN @s_object.
+
+SELECT name subc cnam unam udat
+  FROM trdir
+  INTO TABLE @DATA(lt_programs)
+  WHERE name IN @s_prog.`,
+    notes: [
+      'TADIR is the object directory.',
+      'TRDIR contains ABAP program directory data.',
+      'Use SE03/SE80/SE84 for normal repository analysis first.',
+    ],
+    commonMistakes: [
+      'Updating repository tables directly.',
+      'Confusing object type names.',
+      'Ignoring original system and package ownership.',
+    ],
+    relatedTopics: ['SE84', 'Includes', 'Enhancements'],
+  },
+  {
+    id: 'revtrac-empty-rt-check',
+    title: 'Rev-Trac Empty RT Check Pattern',
+    category: 'Rev-Trac',
+    subcategory: 'RT Analysis',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Rev-Trac /RSC/* tables and custom function modules exist only where Rev-Trac/custom add-ons are installed. Confirm fields in SE11.',
+    difficulty: 'Advanced',
+    explanation: 'Use transport-assignment detail tables to identify RTs that have no assigned transport details before reporting or retrofit analysis.',
+    code: `SELECT a~*
+  FROM /rsc/t_rm_3a AS a
+  INNER JOIN /rsc/t_rm_3b AS b
+    ON b~rm_id = a~rm_id
+  INTO TABLE @DATA(lt_non_empty_rts).
+
+"Exclude owners/teams if your process has a team filter table.
+DELETE lt_non_empty_rts WHERE owner IN lr_excluded_owner.`,
+    notes: [
+      '/RSC/T_RM_3A and /RSC/T_RM_3B meanings depend on Rev-Trac version/customization.',
+      'Check actual field names in SE11 before copying.',
+      'Rev-Trac status and SAP object state can differ.',
+    ],
+    commonMistakes: [
+      'Assuming Rev-Trac tables exist in every SAP system.',
+      'Treating an RT header as non-empty without checking assignment details.',
+      'Ignoring process-specific exclusions such as owner/team filters.',
+    ],
+    relatedTopics: ['Joins', 'SE11', 'Rev-Trac Tips'],
+  },
+  {
+    id: 'spool-submit-to-sap-spool',
+    title: 'SUBMIT to SAP Spool',
+    category: 'Spool and Printing',
+    subcategory: 'Spool',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'SUBMIT ... TO SAP-SPOOL is classic list/spool syntax; printer setup depends on BASIS/SPAD configuration.',
+    difficulty: 'Intermediate',
+    explanation: 'Use SUBMIT TO SAP-SPOOL when a submitted report should write list output to spool.',
+    code: `SUBMIT z_target_report
+  WITH p_bukrs = p_bukrs
+  TO SAP-SPOOL
+  WITHOUT SPOOL DYNPRO
+  AND RETURN.`,
+    notes: [
+      'SP01 is used to inspect spool requests.',
+      'WITHOUT SPOOL DYNPRO avoids interactive spool parameter screens.',
+      'Printing setup is usually handled through BASIS/SPAD.',
+    ],
+    commonMistakes: [
+      'Expecting spool output from reports that do not write list output.',
+      'Using frontend-only logic in spool/background execution.',
+      'Forgetting printer/spool authorization dependencies.',
+    ],
+    relatedTopics: ['Background Jobs', 'WRITE Output', 'SP01'],
+  },
+  {
+    id: 'spool-new-page-print',
+    title: 'NEW-PAGE PRINT ON / OFF',
+    category: 'Spool and Printing',
+    subcategory: 'Printing',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Classic list printing syntax is legacy-oriented and depends on list processing context.',
+    difficulty: 'Intermediate',
+    explanation: 'Use NEW-PAGE PRINT ON/OFF in classic list reports when direct list printing is required.',
+    code: `NEW-PAGE PRINT ON NO DIALOG.
+
+WRITE: / 'Printable report output'.
+WRITE: / 'Generated on:', sy-datum, sy-uzeit.
+
+NEW-PAGE PRINT OFF.`,
+    notes: [
+      'This is classic list processing, not modern UI printing.',
+      'NO DIALOG avoids the print popup where supported.',
+      'Prefer background spool patterns for scheduled output.',
+    ],
+    commonMistakes: [
+      'Using classic print syntax in non-list UI contexts.',
+      'Expecting interactive dialogs in background.',
+      'Not testing printer/spool configuration.',
+    ],
+    relatedTopics: ['Spool', 'Background Jobs', 'WRITE'],
+  },
+  {
+    id: 'date-difference-days',
+    title: 'Calculate Date Difference',
+    category: 'Date and String Handling',
+    subcategory: 'Date and Time',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Simple DATS subtraction is broadly used for day differences.',
+    difficulty: 'Beginner',
+    explanation: 'Subtract one ABAP date from another to calculate a simple number of days.',
+    code: `DATA lv_days TYPE i.
+
+lv_days = sy-datum - p_start_date.
+
+IF lv_days > 30.
+  MESSAGE 'Date is older than 30 days' TYPE 'S' DISPLAY LIKE 'E'.
+ENDIF.`,
+    notes: [
+      'Use DATS fields for date calculations.',
+      'This gives calendar-day differences, not business-day differences.',
+      'Use factory calendar utilities when business days matter.',
+    ],
+    commonMistakes: [
+      'Calculating dates after converting them to text.',
+      'Ignoring business calendar requirements.',
+      'Using string fields for date math.',
+    ],
+    relatedTopics: ['SY-DATUM', 'Messages', 'Selection Screens'],
+  },
+  {
+    id: 'standard-job-tables',
+    title: 'Job Tables: TBTCO and TBTCP',
+    category: 'SAP Standard Tables',
+    subcategory: 'Jobs',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Job metadata table usage depends on authorization and system release. Prefer SM37 for normal job monitoring.',
+    difficulty: 'Intermediate',
+    explanation: 'Use TBTCO and TBTCP for read-only background job analysis when a programmatic check is needed.',
+    code: `SELECT jobname jobcount status sdlstrtdt sdlstrttm
+  FROM tbtco
+  INTO TABLE @DATA(lt_jobs)
+  WHERE jobname IN @s_jobname.
+
+SELECT jobname jobcount progname variant
+  FROM tbtcp
+  INTO TABLE @DATA(lt_steps)
+  FOR ALL ENTRIES IN @lt_jobs
+  WHERE jobname  = @lt_jobs-jobname
+    AND jobcount = @lt_jobs-jobcount.`,
+    notes: [
+      'TBTCO contains job header/status data.',
+      'TBTCP contains job step/program data.',
+      'Use SM37 for interactive job troubleshooting.',
+    ],
+    commonMistakes: [
+      'Forgetting the FOR ALL ENTRIES empty-table guard.',
+      'Treating job status without understanding your operations process.',
+      'Updating standard job tables directly.',
+    ],
+    relatedTopics: ['Background Jobs', 'SM37', 'FOR ALL ENTRIES'],
+  },
+  {
+    id: 'revtrac-status-read',
+    title: 'Rev-Trac Status Read Pattern',
+    category: 'Rev-Trac',
+    subcategory: 'RT Analysis',
+    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
+    compatibilityNotes: 'Rev-Trac tables and fields are installation-specific. Confirm table definitions in SE11 before use.',
+    difficulty: 'Advanced',
+    explanation: 'Read Rev-Trac header/status style data only after confirming the local table structure.',
+    code: `SELECT rm_id status owner scen_man
+  FROM /rsc/t_rm_3a
+  INTO TABLE @DATA(lt_rt_header)
+  WHERE rm_id IN @s_rt.
+
+DELETE lt_rt_header WHERE owner IN lr_excluded_owner.`,
+    notes: [
+      '/RSC/T_RM_3A purpose can vary by Rev-Trac version/customization.',
+      'SCEN_MAN usually indicates manual handling in many retrofit contexts.',
+      'Confirm actual status meaning with your local Rev-Trac process.',
+    ],
+    commonMistakes: [
+      'Assuming Rev-Trac field names across systems.',
+      'Treating Rev-Trac status as proof of SAP object version.',
+      'Forgetting owner/team exclusions used by the project.',
+    ],
+    relatedTopics: ['Rev-Trac Tips', 'SE11', 'Custom Tables'],
   },
 ];

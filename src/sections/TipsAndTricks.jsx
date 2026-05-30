@@ -3,7 +3,7 @@ import { MoreVertical, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { tips as initialTips } from '../data/tips';
 
 const storageKey = 'abap-cheatsheets-user-tips';
-const migrationKey = 'abap-cheatsheets-built-in-tips-v2';
+const migrationKey = 'abap-cheatsheets-built-in-tips-v3';
 
 function loadTips() {
   if (typeof window === 'undefined') {
