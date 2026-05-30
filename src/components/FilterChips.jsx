@@ -47,18 +47,20 @@ function FilterChips({
             </button>
           ))}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <button
-              className={`tag-chip ${activeTags.includes(tag) ? 'tag-chip-active' : ''}`}
-              key={tag}
-              onClick={() => onToggleTag(tag)}
-              type="button"
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
+        {tags.length ? (
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <button
+                className={`tag-chip ${activeTags.includes(tag) ? 'tag-chip-active' : ''}`}
+                key={tag}
+                onClick={() => onToggleTag(tag)}
+                type="button"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   );

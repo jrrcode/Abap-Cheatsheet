@@ -22,6 +22,7 @@ import SearchBar from './components/SearchBar';
 import FilterChips from './components/FilterChips';
 import CheatSheetCard from './components/CheatSheetCard';
 import EmptyState from './components/EmptyState';
+import CategoryPlaceholder from './components/CategoryPlaceholder';
 import AddTemplateGuide from './sections/AddTemplateGuide';
 import TipsAndTricks from './sections/TipsAndTricks';
 import BackupRestore from './sections/BackupRestore';
@@ -67,6 +68,10 @@ function App() {
   const [favorites, toggleFavorite, setFavorites] = useFavorites();
 
   const tags = useMemo(() => getAllTags(cheatsheets), []);
+  const validFavoriteCount = useMemo(
+    () => favorites.filter((id) => cheatsheets.some((sheet) => sheet.id === id)).length,
+    [favorites],
+  );
 
   const visibleCheatsheets = useMemo(
     () =>
@@ -82,7 +87,8 @@ function App() {
 
   const currentPage = pageMeta[activeView] ?? pageMeta.overview;
   const showingCategoryPage = activeView === 'overview' && activeCategory !== 'All';
-  const showingOverviewHome = activeView === 'overview' && activeCategory === 'All';
+  const showingOverviewHome = activeView === 'overview' && activeCategory === 'All' && query.trim() === '';
+  const selectedCategory = categories.find((category) => category.name === activeCategory);
   const showSearch = activeView === 'overview' || activeView === 'favorites';
   const showPrint = activeView === 'overview' || activeView === 'favorites';
 
@@ -220,10 +226,10 @@ function App() {
           <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
             {showingOverviewHome ? (
               <section className="print-hidden mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                <HeaderStat label="Sample templates" value={cheatsheets.length} />
-                <HeaderStat label="Prepared categories" value={categories.length} />
+                <HeaderStat label="Cheatsheet templates" value={cheatsheets.length} />
+                <HeaderStat label="Placeholder categories" value={categories.length} />
                 <HeaderStat label="Tag filters" value={tags.length} />
-                <HeaderStat label="Saved favorites" value={favorites.length} />
+                <HeaderStat label="Saved favorites" value={validFavoriteCount} />
               </section>
             ) : null}
 
@@ -254,15 +260,31 @@ function App() {
               </>
             ) : null}
 
+            {showingOverviewHome ? (
+              <section className="mb-6 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {categories.map((category) => (
+                  <CategoryPlaceholder category={category} key={category.name} onSelect={handleCategoryChange} />
+                ))}
+              </section>
+            ) : null}
+
+            {showingCategoryPage && selectedCategory ? (
+              <section className="mb-6">
+                <CategoryPlaceholder category={selectedCategory} />
+              </section>
+            ) : null}
+
             {activeView === 'overview' || activeView === 'favorites' ? (
               <>
-                <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
-                  <p className="text-sm text-ink-600 dark:text-ink-300">
-                    {activeCategory === 'All' ? 'Showing' : `Showing ${activeCategory}`}{' '}
-                    <span className="font-semibold text-ink-950 dark:text-white">{visibleCheatsheets.length}</span>{' '}
-                    templates
-                  </p>
-                </div>
+                {!showingOverviewHome ? (
+                  <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
+                    <p className="text-sm text-ink-600 dark:text-ink-300">
+                      {activeCategory === 'All' ? 'Showing' : `Showing ${activeCategory}`}{' '}
+                      <span className="font-semibold text-ink-950 dark:text-white">{visibleCheatsheets.length}</span>{' '}
+                      templates
+                    </p>
+                  </div>
+                ) : null}
 
                 {visibleCheatsheets.length ? (
                   <section className="grid items-start gap-4 md:grid-cols-2">
@@ -276,9 +298,9 @@ function App() {
                       />
                     ))}
                   </section>
-                ) : (
+                ) : !showingOverviewHome && !showingCategoryPage ? (
                   <EmptyState onClear={clearFilters} />
-                )}
+                ) : null}
               </>
             ) : null}
           </div>
