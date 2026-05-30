@@ -42,10 +42,15 @@ function listFromText(value) {
 
 function TipsAndTricks() {
   const [tips, setTips] = useState(loadTips);
-  const [formOpen, setFormOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingTipId, setEditingTipId] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
-  const [form, setForm] = useState({
+  const [addForm, setAddForm] = useState({
+    title: '',
+    summary: '',
+    checklist: '',
+  });
+  const [editForm, setEditForm] = useState({
     title: '',
     summary: '',
     checklist: '',
@@ -66,65 +71,76 @@ function TipsAndTricks() {
     [tips],
   );
 
-  const resetForm = () => {
-    setForm({ title: '', summary: '', checklist: '' });
-    setEditingTipId(null);
-    setFormOpen(false);
+  const closeAddModal = () => {
+    setAddForm({ title: '', summary: '', checklist: '' });
+    setAddModalOpen(false);
   };
 
-  const openAddForm = () => {
-    setForm({ title: '', summary: '', checklist: '' });
-    setEditingTipId(null);
+  const openAddModal = () => {
+    setAddForm({ title: '', summary: '', checklist: '' });
     setOpenMenuId(null);
-    setFormOpen(true);
+    setAddModalOpen(true);
   };
 
-  const editTip = (tip) => {
-    setForm({
+  const startEditingTip = (tip) => {
+    setEditForm({
       title: tip.title,
       summary: tip.summary,
       checklist: tip.checklist.join('\n'),
     });
     setEditingTipId(tip.id);
     setOpenMenuId(null);
-    setFormOpen(true);
   };
 
-  const saveTip = (event) => {
+  const cancelEditingTip = () => {
+    setEditForm({ title: '', summary: '', checklist: '' });
+    setEditingTipId(null);
+  };
+
+  const addTip = (event) => {
     event.preventDefault();
 
-    const title = form.title.trim();
-    const summary = form.summary.trim();
-    const checklist = listFromText(form.checklist);
+    const title = addForm.title.trim();
+    const summary = addForm.summary.trim();
+    const checklist = listFromText(addForm.checklist);
 
     if (!title || !summary) {
       return;
     }
 
-    if (editingTipId) {
-      setTips((current) =>
-        current.map((tip) => (tip.id === editingTipId ? { ...tip, title, summary, checklist } : tip)),
-      );
-    } else {
-      setTips((current) => [
-        ...current,
-        {
-          id: `tip-${Date.now()}`,
-          title,
-          summary,
-          checklist,
-        },
-      ]);
+    setTips((current) => [
+      ...current,
+      {
+        id: `tip-${Date.now()}`,
+        title,
+        summary,
+        checklist,
+      },
+    ]);
+
+    closeAddModal();
+  };
+
+  const saveEditedTip = (id) => {
+    const title = editForm.title.trim();
+    const summary = editForm.summary.trim();
+    const checklist = listFromText(editForm.checklist);
+
+    if (!title || !summary) {
+      return;
     }
 
-    resetForm();
+    setTips((current) =>
+      current.map((tip) => (tip.id === id ? { ...tip, title, summary, checklist } : tip)),
+    );
+    cancelEditingTip();
   };
 
   const deleteTip = (id) => {
     setTips((current) => current.filter((tip) => tip.id !== id));
     setOpenMenuId(null);
     if (editingTipId === id) {
-      resetForm();
+      cancelEditingTip();
     }
   };
 
@@ -139,7 +155,7 @@ function TipsAndTricks() {
         </div>
         <button
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-sap-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sap-800 dark:bg-sap-500 dark:hover:bg-sap-400"
-          onClick={openAddForm}
+          onClick={openAddModal}
           type="button"
         >
           <Plus size={16} />
@@ -147,145 +163,222 @@ function TipsAndTricks() {
         </button>
       </div>
 
-      {formOpen ? (
-        <form
-          className="rounded-md border border-ink-200 bg-white p-4 shadow-sm dark:border-ink-800 dark:bg-ink-900 sm:p-5"
-          onSubmit={saveTip}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
-                Local notes
-              </p>
-              <h2 className="mt-2 text-lg font-semibold text-sap-900 dark:text-sap-100">
-                {editingTipId ? 'Edit tip' : 'Add a tip'}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
-                Tips are saved only in this browser. Use Backup & Restore if you want to move them to another device.
-              </p>
+      {addModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/60 p-3 sm:items-center sm:p-6">
+          <button
+            aria-label="Close add tip modal"
+            className="absolute inset-0"
+            onClick={closeAddModal}
+            type="button"
+          />
+          <form
+            className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-md border border-ink-200 bg-white p-4 shadow-soft dark:border-ink-800 dark:bg-ink-900 sm:p-5"
+            onSubmit={addTip}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
+                  Local notes
+                </p>
+                <h2 className="mt-2 text-lg font-semibold text-sap-900 dark:text-sap-100">Add a tip</h2>
+                <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
+                  Tips are saved only in this browser. Use Backup & Restore if you want to move them to another device.
+                </p>
+              </div>
+              <button
+                aria-label="Close add tip form"
+                className="icon-button"
+                onClick={closeAddModal}
+                type="button"
+              >
+                <X size={17} />
+              </button>
             </div>
-            <button
-              aria-label="Close tip form"
-              className="icon-button"
-              onClick={resetForm}
-              type="button"
-            >
-              <X size={17} />
-            </button>
-          </div>
 
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
-                Title
-              </span>
-              <input
-                className="form-control"
-                onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
-                placeholder="Example: Check selection size before SELECT"
-                value={form.title}
-              />
-            </label>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
+                  Title
+                </span>
+                <input
+                  className="form-control"
+                  onChange={(event) => setAddForm((current) => ({ ...current, title: event.target.value }))}
+                  placeholder="Example: Check selection size before SELECT"
+                  value={addForm.title}
+                />
+              </label>
 
-            <label className="block md:row-span-2">
-              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
-                Checklist, one per line
-              </span>
-              <textarea
-                className="form-control min-h-32"
-                onChange={(event) => setForm((current) => ({ ...current, checklist: event.target.value }))}
-                placeholder="Use ST05 when SQL is slow&#10;Avoid SELECT inside LOOP"
-                value={form.checklist}
-              />
-            </label>
+              <label className="block md:row-span-2">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
+                  Checklist, one per line
+                </span>
+                <textarea
+                  className="form-control min-h-32"
+                  onChange={(event) => setAddForm((current) => ({ ...current, checklist: event.target.value }))}
+                  placeholder="Use ST05 when SQL is slow&#10;Avoid SELECT inside LOOP"
+                  value={addForm.checklist}
+                />
+              </label>
 
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
-                Summary
-              </span>
-              <textarea
-                className="form-control min-h-24"
-                onChange={(event) => setForm((current) => ({ ...current, summary: event.target.value }))}
-                placeholder="Write the practical note or reminder."
-                value={form.summary}
-              />
-            </label>
-          </div>
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
+                  Summary
+                </span>
+                <textarea
+                  className="form-control min-h-24"
+                  onChange={(event) => setAddForm((current) => ({ ...current, summary: event.target.value }))}
+                  placeholder="Write the practical note or reminder."
+                  value={addForm.summary}
+                />
+              </label>
+            </div>
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
-            <button
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
-              onClick={resetForm}
-              type="button"
-            >
-              Cancel
-            </button>
-            <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-sap-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sap-800 dark:bg-sap-500 dark:hover:bg-sap-400"
-              type="submit"
-            >
-              <Plus size={16} />
-              {editingTipId ? 'Save changes' : 'Add tip'}
-            </button>
-          </div>
-        </form>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                className="inline-flex min-h-11 items-center justify-center rounded-md border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+                onClick={closeAddModal}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-sap-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sap-800 dark:bg-sap-500 dark:hover:bg-sap-400"
+                type="submit"
+              >
+                <Plus size={16} />
+                Add tip
+              </button>
+            </div>
+          </form>
+        </div>
       ) : null}
 
       <div className="grid items-start gap-4">
         {sortedTips.length ? (
-          sortedTips.map((tip) => (
-            <article
-              className="rounded-md border border-ink-200 bg-white p-4 shadow-sm dark:border-ink-800 dark:bg-ink-900 sm:p-5"
-              key={tip.id}
-            >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <h2 className="text-base font-semibold leading-6 text-sap-900 dark:text-sap-100 sm:text-lg">
-                    {tip.title}
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-ink-300">{tip.summary}</p>
-                </div>
-                <div className="relative self-end sm:self-start">
-                  <button
-                    aria-expanded={openMenuId === tip.id}
-                    aria-label={`Open options for ${tip.title}`}
-                    className="icon-button"
-                    onClick={() => setOpenMenuId((current) => (current === tip.id ? null : tip.id))}
-                    type="button"
-                  >
-                    <MoreVertical size={17} />
-                  </button>
-                  {openMenuId === tip.id ? (
-                    <div className="absolute right-0 top-11 z-20 w-40 overflow-hidden rounded-md border border-ink-200 bg-white py-1 shadow-soft dark:border-ink-700 dark:bg-ink-900">
+          sortedTips.map((tip) => {
+            const isEditing = editingTipId === tip.id;
+
+            return (
+              <article
+                className="rounded-md border border-ink-200 bg-white p-4 shadow-sm dark:border-ink-800 dark:bg-ink-900 sm:p-5"
+                key={tip.id}
+              >
+                {isEditing ? (
+                  <div className="grid gap-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sap-700 dark:text-sap-300">
+                        Editing tip
+                      </p>
                       <button
-                        className="flex min-h-10 w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:text-ink-200 dark:hover:bg-ink-800"
-                        onClick={() => editTip(tip)}
+                        aria-label={`Cancel editing ${tip.title}`}
+                        className="icon-button"
+                        onClick={cancelEditingTip}
+                        type="button"
+                      >
+                        <X size={17} />
+                      </button>
+                    </div>
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
+                        Title
+                      </span>
+                      <input
+                        className="form-control"
+                        onChange={(event) => setEditForm((current) => ({ ...current, title: event.target.value }))}
+                        value={editForm.title}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
+                        Summary
+                      </span>
+                      <textarea
+                        className="form-control min-h-24"
+                        onChange={(event) => setEditForm((current) => ({ ...current, summary: event.target.value }))}
+                        value={editForm.summary}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-ink-500 dark:text-ink-400">
+                        Checklist, one per line
+                      </span>
+                      <textarea
+                        className="form-control min-h-32"
+                        onChange={(event) => setEditForm((current) => ({ ...current, checklist: event.target.value }))}
+                        value={editForm.checklist}
+                      />
+                    </label>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                      <button
+                        className="inline-flex min-h-11 items-center justify-center rounded-md border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+                        onClick={cancelEditingTip}
+                        type="button"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-sap-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sap-800 dark:bg-sap-500 dark:hover:bg-sap-400"
+                        onClick={() => saveEditedTip(tip.id)}
                         type="button"
                       >
                         <Pencil size={15} />
-                        Edit
-                      </button>
-                      <button
-                        className="flex min-h-10 w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-red-700 hover:bg-red-50 dark:text-red-200 dark:hover:bg-red-950"
-                        onClick={() => deleteTip(tip.id)}
-                        type="button"
-                      >
-                        <Trash2 size={15} />
-                        Delete
+                        Save changes
                       </button>
                     </div>
-                  ) : null}
-                </div>
-              </div>
-              {tip.checklist.length ? (
-                <ul className="mt-4 space-y-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
-                  {tip.checklist.map((item) => (
-                    <li key={item}>- {item}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </article>
-          ))
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <h2 className="text-base font-semibold leading-6 text-sap-900 dark:text-sap-100 sm:text-lg">
+                          {tip.title}
+                        </h2>
+                        <p className="mt-2 text-sm leading-6 text-ink-600 dark:text-ink-300">{tip.summary}</p>
+                      </div>
+                      <div className="relative self-end sm:self-start">
+                        <button
+                          aria-expanded={openMenuId === tip.id}
+                          aria-label={`Open options for ${tip.title}`}
+                          className="icon-button"
+                          onClick={() => setOpenMenuId((current) => (current === tip.id ? null : tip.id))}
+                          type="button"
+                        >
+                          <MoreVertical size={17} />
+                        </button>
+                        {openMenuId === tip.id ? (
+                          <div className="absolute right-0 top-11 z-20 w-40 overflow-hidden rounded-md border border-ink-200 bg-white py-1 shadow-soft dark:border-ink-700 dark:bg-ink-900">
+                            <button
+                              className="flex min-h-10 w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:text-ink-200 dark:hover:bg-ink-800"
+                              onClick={() => startEditingTip(tip)}
+                              type="button"
+                            >
+                              <Pencil size={15} />
+                              Edit
+                            </button>
+                            <button
+                              className="flex min-h-10 w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-red-700 hover:bg-red-50 dark:text-red-200 dark:hover:bg-red-950"
+                              onClick={() => deleteTip(tip.id)}
+                              type="button"
+                            >
+                              <Trash2 size={15} />
+                              Delete
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                    {tip.checklist.length ? (
+                      <ul className="mt-4 space-y-2 text-sm leading-6 text-ink-600 dark:text-ink-300">
+                        {tip.checklist.map((item) => (
+                          <li key={item}>- {item}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </>
+                )}
+              </article>
+            );
+          })
         ) : (
           <section className="rounded-md border border-dashed border-ink-300 bg-white p-8 text-center dark:border-ink-700 dark:bg-ink-900">
             <h2 className="text-lg font-semibold text-ink-950 dark:text-white">No tips yet</h2>
