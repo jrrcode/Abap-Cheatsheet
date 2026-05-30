@@ -480,42 +480,6 @@ SELECT vbeln erdat auart kunnr
     relatedTopics: ['Open SQL', 'Selection Screens', 'S/4HANA'],
   },
   {
-    id: 'foundation-debugging',
-    title: 'Debugging Workflow',
-    category: 'Debugging',
-    subcategory: 'Debugger Basics',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'Debugger tools vary by SAP GUI, ADT, authorization, and system settings, but the workflow applies broadly.',
-    difficulty: 'Beginner',
-    explanation: 'Use the debugger to inspect variables, internal tables, SY-SUBRC, call stack, SELECT results, and parameter flow between routines.',
-    code: `"Debugger quick notes:
-"/h                    -> start debugging before executing a transaction/report.
-"Session breakpoint    -> current user/session.
-"External breakpoint   -> HTTP/RFC/background-style entry points for your user.
-"Watchpoint            -> stop when a variable changes or reaches a condition.
-
-"Useful checks while debugging:
-"1. Check SY-SUBRC immediately after READ/CALL/SELECT.
-"2. Inspect internal table row count and keys.
-"3. Check the call stack to see how code was reached.
-"4. Compare FORM/PERFORM parameter order and types.
-"5. For RFC, set an external breakpoint in the called system/user context.
-"6. For SELECT issues, inspect selection ranges and returned table contents.
-
-BREAK-POINT. "Remove before transport unless intentionally controlled.`,
-    notes: [
-      'Use external breakpoints for RFC, web, and some background/debug entry points.',
-      'Watchpoints are excellent for finding where a variable changes unexpectedly.',
-      'Always remove temporary BREAK-POINT statements before transport.',
-    ],
-    commonMistakes: [
-      'Checking SY-SUBRC too late after another statement changed it.',
-      'Debugging the caller system when the RFC issue is in the called system.',
-      'Missing a FORM/PERFORM mismatch because the parameter order looks similar.',
-    ],
-    relatedTopics: ['Function Modules / RFC', 'Open SQL', 'Common Mistakes'],
-  },
-  {
     id: 'foundation-transport-management',
     title: 'Transport Management Tables',
     category: 'Transport Tables',
@@ -778,84 +742,6 @@ READ TABLE lt_names_h INTO DATA(ls_name) WITH TABLE KEY kunnr = ls_order-kunnr.`
       'Using DISTINCT to hide data-model or join mistakes.',
     ],
     relatedTopics: ['Open SQL', 'Internal Tables', 'ST05 / SAT'],
-  },
-  {
-    id: 'foundation-common-transactions',
-    title: 'Common SAP Transactions',
-    category: 'Basics',
-    subcategory: 'Transactions',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'Transaction availability depends on system type, authorization, SAP GUI, and whether the system is classic GUI or cloud-oriented.',
-    difficulty: 'Beginner',
-    explanation: 'These are common SAP GUI transactions ABAP developers use to inspect code, dictionary objects, function modules, transports, jobs, dumps, logs, and RFC destinations.',
-    code: `"Development:
-"SE38  ABAP Editor / reports
-"SE80  Object Navigator
-"SE11  ABAP Dictionary
-"SE16N Table display
-"SE37  Function Builder
-"SE24  Class Builder
-
-"Transports:
-"SE09  Transport Organizer
-"SE10  Transport Organizer
-"SE03  Transport Organizer Tools
-
-"Runtime / administration:
-"SM59  RFC destinations
-"ST22  ABAP dumps
-"SM21  System log
-"SM37  Background jobs`,
-    notes: [
-      'Use SE11 before coding against unfamiliar tables.',
-      'Use ST22 after a runtime error and SM37 for background job issues.',
-      'Use SM59 to test RFC destinations before debugging ABAP interface logic.',
-    ],
-    commonMistakes: [
-      'Using SE16N results as proof of authorization or application behavior.',
-      'Checking the wrong client/system when debugging transport or table issues.',
-      'Forgetting that transaction access depends on roles.',
-    ],
-    relatedTopics: ['DDIC', 'Debugging', 'Transport Tables'],
-  },
-  {
-    id: 'foundation-common-beginner-mistakes',
-    title: 'Common Beginner Mistakes',
-    category: 'Common Mistakes',
-    subcategory: 'Troubleshooting Checklist',
-    compatibility: ['Classic ABAP', 'Modern ABAP 7.40+', 'S/4HANA'],
-    compatibilityNotes: 'These mistakes appear across classic and modern ABAP. Exact symptoms differ by release and syntax mode.',
-    difficulty: 'Beginner',
-    explanation: 'Use this checklist when code compiles but behaves strangely, dumps, returns too much data, or fails during transport analysis.',
-    code: `"Checklist:
-"1. FORM/PERFORM parameter count, order, and types must match.
-"2. Do not define FORM inside another FORM.
-"3. Transport object type for programs is commonly PROG, not random text such as REPS.
-"4. Modern Open SQL needs @ for ABAP host variables.
-"5. SORT before DELETE ADJACENT DUPLICATES using the same comparison fields.
-"6. Avoid SELECT inside LOOP.
-"7. Check driver table is not initial before FOR ALL ENTRIES.
-"8. Avoid old internal tables WITH HEADER LINE.
-"9. SQL LIKE uses %, ABAP CP uses *.
-"10. Distinguish transport request from task in E070/E071.
-
-"SQL LIKE:
-WHERE name1 LIKE 'ABC%'
-
-"ABAP CP:
-IF lv_name CP 'ABC*'.
-ENDIF.`,
-    notes: [
-      'When stuck, check SY-SUBRC immediately after the statement that matters.',
-      'Use debugger call stack for FORM/PERFORM and method flow issues.',
-      'Use SE11 for object fields and SE09/SE10 for transport ownership.',
-    ],
-    commonMistakes: [
-      'Assuming all pattern matching uses the same wildcard.',
-      'Using generic STANDARD TABLE parameters without defining a useful row type.',
-      'Confusing request-level and task-level transport entries.',
-    ],
-    relatedTopics: ['Debugging', 'Transport Tables', 'Open SQL'],
   },
   {
     id: 'foundation-practical-templates',

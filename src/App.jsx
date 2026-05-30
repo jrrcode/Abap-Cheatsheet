@@ -32,7 +32,6 @@ const views = [
 ];
 
 const categoryOrder = [
-  'All',
   'Basics',
   'Internal Tables',
   'Open SQL',
@@ -93,7 +92,7 @@ function App() {
     [],
   );
   const categories = useMemo(() => {
-    const available = new Set(['All', ...cheatsheets.map((sheet) => sheet.category)]);
+    const available = new Set(cheatsheets.map((sheet) => sheet.category));
     const ordered = categoryOrder.filter((category) => available.has(category));
     const remaining = [...available]
       .filter((category) => !categoryOrder.includes(category))
@@ -234,7 +233,7 @@ function App() {
             {showingOverviewHome ? (
               <section className="mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 <HeaderStat label="Cheatsheet templates" value={cheatsheets.length} />
-                <HeaderStat label="Categories" value={categories.length - 1} />
+                <HeaderStat label="Categories" value={categories.length} />
                 <HeaderStat label="Saved favorites" value={validFavoriteCount} />
               </section>
             ) : null}

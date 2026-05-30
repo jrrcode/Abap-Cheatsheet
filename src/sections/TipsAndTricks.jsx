@@ -3,6 +3,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { tips as initialTips } from '../data/tips';
 
 const storageKey = 'abap-cheatsheets-user-tips';
+const migrationKey = 'abap-cheatsheets-built-in-tips-v1';
 
 function loadTips() {
   if (typeof window === 'undefined') {
@@ -11,7 +12,22 @@ function loadTips() {
 
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey));
-    return Array.isArray(saved) ? saved : initialTips;
+    if (!Array.isArray(saved)) {
+      localStorage.setItem(migrationKey, 'done');
+      localStorage.setItem(storageKey, JSON.stringify(initialTips));
+      return initialTips;
+    }
+
+    if (localStorage.getItem(migrationKey) === 'done') {
+      return saved;
+    }
+
+    const savedIds = new Set(saved.map((tip) => tip.id));
+    const missingBuiltIns = initialTips.filter((tip) => !savedIds.has(tip.id));
+    const migratedTips = [...missingBuiltIns, ...saved];
+    localStorage.setItem(migrationKey, 'done');
+    localStorage.setItem(storageKey, JSON.stringify(migratedTips));
+    return migratedTips;
   } catch {
     return initialTips;
   }
