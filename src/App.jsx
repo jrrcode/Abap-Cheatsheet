@@ -57,11 +57,17 @@ const pageMeta = {
 function App() {
   const [activeView, setActiveView] = useState('overview');
   const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeTags, setActiveTags] = useState([]);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [darkMode, setDarkMode] = useDarkMode();
   const [favorites, toggleFavorite, setFavorites] = useFavorites();
 
   const tags = useMemo(() => getAllTags(cheatsheets), []);
+  const categories = useMemo(
+    () => ['All', ...new Set(cheatsheets.map((sheet) => sheet.category))].sort((a, b) => (a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b))),
+    [],
+  );
   const validFavoriteCount = useMemo(
     () => favorites.filter((id) => cheatsheets.some((sheet) => sheet.id === id)).length,
     [favorites],
@@ -71,16 +77,17 @@ function App() {
     () =>
       filterCheatsheets(cheatsheets, {
         query,
-        category: 'All',
-        tags: [],
+        category: activeCategory,
+        tags: activeTags,
         favoritesOnly: activeView === 'favorites',
         favorites,
       }),
-    [query, activeView, favorites],
+    [query, activeCategory, activeTags, activeView, favorites],
   );
 
   const currentPage = pageMeta[activeView] ?? pageMeta.overview;
-  const showingOverviewHome = activeView === 'overview' && query.trim() === '';
+  const showingOverviewHome =
+    activeView === 'overview' && query.trim() === '' && activeCategory === 'All' && activeTags.length === 0;
   const showSearch = activeView === 'overview' || activeView === 'favorites';
 
   const handleViewChange = (view) => {
@@ -88,8 +95,16 @@ function App() {
     setMobileNavOpen(false);
   };
 
+  const toggleTag = (tag) => {
+    setActiveTags((current) =>
+      current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag],
+    );
+  };
+
   const clearFilters = () => {
     setQuery('');
+    setActiveCategory('All');
+    setActiveTags([]);
   };
 
   return (
@@ -170,6 +185,7 @@ function App() {
             {showingOverviewHome ? (
               <section className="mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 <HeaderStat label="Cheatsheet templates" value={cheatsheets.length} />
+                <HeaderStat label="Categories" value={categories.length - 1} />
                 <HeaderStat label="Tag filters" value={tags.length} />
                 <HeaderStat label="Saved favorites" value={validFavoriteCount} />
               </section>
@@ -186,6 +202,54 @@ function App() {
                 onRestoreFavorites={setFavorites}
                 onRestoreTheme={setDarkMode}
               />
+            ) : null}
+
+            {activeView === 'overview' ? (
+              <section className="mb-5 rounded-md border border-ink-200 bg-white p-3 dark:border-ink-800 dark:bg-ink-900 sm:p-4">
+                <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-sm font-semibold text-ink-950 dark:text-white">Filters</h2>
+                    <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
+                      Filter by category or tag, then use search to narrow further.
+                    </p>
+                  </div>
+                  {activeCategory !== 'All' || activeTags.length > 0 || query ? (
+                    <button
+                      className="min-h-10 rounded-md border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+                      onClick={clearFilters}
+                      type="button"
+                    >
+                      Reset
+                    </button>
+                  ) : null}
+                </div>
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((category) => (
+                      <button
+                        className={`tag-chip ${activeCategory === category ? 'tag-chip-active' : ''}`}
+                        key={category}
+                        onClick={() => setActiveCategory(category)}
+                        type="button"
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <button
+                        className={`tag-chip ${activeTags.includes(tag) ? 'tag-chip-active' : ''}`}
+                        key={tag}
+                        onClick={() => toggleTag(tag)}
+                        type="button"
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
             ) : null}
 
             {activeView === 'overview' || activeView === 'favorites' ? (
@@ -207,7 +271,7 @@ function App() {
                         key={sheet.id}
                         sheet={sheet}
                         onToggleFavorite={() => toggleFavorite(sheet.id)}
-                        onToggleTag={() => {}}
+                        onToggleTag={toggleTag}
                       />
                     ))}
                   </section>
