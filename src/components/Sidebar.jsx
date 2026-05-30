@@ -1,9 +1,6 @@
 function Sidebar({
   activeView,
-  activeCategory,
-  categories,
   mobile = false,
-  onCategoryChange,
   onViewChange,
   views,
 }) {
@@ -37,24 +34,6 @@ function Sidebar({
           );
         })}
       </nav>
-
-      <div className="mt-8">
-        <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">
-          Categories
-        </p>
-        <div className="space-y-1">
-          {categories.map((category) => (
-            <button
-              className={`nav-button ${activeCategory === category.name ? 'nav-button-active' : ''}`}
-              key={category.name}
-              onClick={() => onCategoryChange(category.name)}
-              type="button"
-            >
-              <span className="truncate">{category.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
     </>
   );
 

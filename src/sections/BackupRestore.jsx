@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 const backupVersion = 1;
 const favoritesKey = 'abap-cheatsheets-favorites';
 const themeKey = 'abap-cheatsheets-theme';
+const tipsKey = 'abap-cheatsheets-user-tips';
 
 function normalizeFavorites(value) {
   return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : null;
@@ -11,6 +12,12 @@ function normalizeFavorites(value) {
 
 function normalizeTheme(value) {
   return value === 'dark' || value === 'light' ? value : null;
+}
+
+function normalizeTips(value) {
+  return Array.isArray(value)
+    ? value.filter((tip) => tip && typeof tip.id === 'string' && typeof tip.title === 'string')
+    : null;
 }
 
 function BackupRestore({ darkMode, favorites, onRestoreFavorites, onRestoreTheme }) {
@@ -25,6 +32,7 @@ function BackupRestore({ darkMode, favorites, onRestoreFavorites, onRestoreTheme
       localStorage: {
         [favoritesKey]: favorites,
         [themeKey]: darkMode ? 'dark' : 'light',
+        [tipsKey]: JSON.parse(localStorage.getItem(tipsKey) ?? '[]'),
       },
     };
 
@@ -49,14 +57,17 @@ function BackupRestore({ darkMode, favorites, onRestoreFavorites, onRestoreTheme
       const storage = parsed?.localStorage;
       const importedFavorites = normalizeFavorites(storage?.[favoritesKey]);
       const importedTheme = normalizeTheme(storage?.[themeKey]);
+      const importedTips = normalizeTips(storage?.[tipsKey] ?? []);
 
-      if (!storage || importedFavorites === null || importedTheme === null) {
+      if (!storage || importedFavorites === null || importedTheme === null || importedTips === null) {
         throw new Error('Unsupported backup format.');
       }
 
       onRestoreFavorites([...new Set(importedFavorites)]);
       onRestoreTheme(importedTheme === 'dark');
-      setStatus({ type: 'success', message: 'Backup restored. Favorites and theme were updated.' });
+      localStorage.setItem(tipsKey, JSON.stringify(importedTips));
+      window.dispatchEvent(new window.Event('abap-cheatsheets-tips-restored'));
+      setStatus({ type: 'success', message: 'Backup restored. Favorites, theme, and tips were updated.' });
     } catch (error) {
       setStatus({
         type: 'error',
@@ -112,6 +123,7 @@ function BackupRestore({ darkMode, favorites, onRestoreFavorites, onRestoreTheme
         <ul className="mt-2 space-y-1">
           <li>- {favoritesKey}</li>
           <li>- {themeKey}</li>
+          <li>- {tipsKey}</li>
         </ul>
       </div>
 

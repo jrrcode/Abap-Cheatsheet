@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Check, Clipboard, RotateCcw } from 'lucide-react';
-import { categories } from '../data/categories';
 import { compatibilityOptions, difficultyOptions } from '../data/cheatsheets';
 
 const starterTemplate = {
   title: '',
-  category: categories[0]?.name ?? '',
+  category: '',
   subcategory: '',
   tags: 'Classic ABAP\nBeginner',
   compatibility: ['Classic ABAP'],
@@ -135,17 +134,12 @@ function AddTemplateGuide() {
           </Field>
 
           <Field label="Category">
-            <select
+            <input
               className="form-control"
               onChange={(event) => updateField('category', event.target.value)}
+              placeholder="Example: Open SQL"
               value={form.category}
-            >
-              {categories.map((category) => (
-                <option key={category.name} value={category.name}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+            />
           </Field>
 
           <Field label="Subcategory">

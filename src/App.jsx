@@ -6,23 +6,19 @@ import {
   Lightbulb,
   Menu,
   Moon,
-  Printer,
   Star,
   Sun,
   X,
 } from 'lucide-react';
 import { cheatsheets } from './data/cheatsheets';
-import { categories } from './data/categories';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useFavorites } from './hooks/useFavorites';
 import { filterCheatsheets, getAllTags } from './utils/search';
 import HeaderStat from './components/HeaderStat';
 import Sidebar from './components/Sidebar';
 import SearchBar from './components/SearchBar';
-import FilterChips from './components/FilterChips';
 import CheatSheetCard from './components/CheatSheetCard';
 import EmptyState from './components/EmptyState';
-import CategoryPlaceholder from './components/CategoryPlaceholder';
 import AddTemplateGuide from './sections/AddTemplateGuide';
 import TipsAndTricks from './sections/TipsAndTricks';
 import BackupRestore from './sections/BackupRestore';
@@ -61,8 +57,6 @@ const pageMeta = {
 function App() {
   const [activeView, setActiveView] = useState('overview');
   const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeTags, setActiveTags] = useState([]);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [darkMode, setDarkMode] = useDarkMode();
   const [favorites, toggleFavorite, setFavorites] = useFavorites();
@@ -77,61 +71,31 @@ function App() {
     () =>
       filterCheatsheets(cheatsheets, {
         query,
-        category: activeCategory,
-        tags: activeTags,
+        category: 'All',
+        tags: [],
         favoritesOnly: activeView === 'favorites',
         favorites,
       }),
-    [query, activeCategory, activeTags, activeView, favorites],
+    [query, activeView, favorites],
   );
 
   const currentPage = pageMeta[activeView] ?? pageMeta.overview;
-  const showingCategoryPage = activeView === 'overview' && activeCategory !== 'All';
-  const showingOverviewHome = activeView === 'overview' && activeCategory === 'All' && query.trim() === '';
-  const selectedCategory = categories.find((category) => category.name === activeCategory);
+  const showingOverviewHome = activeView === 'overview' && query.trim() === '';
   const showSearch = activeView === 'overview' || activeView === 'favorites';
-  const showPrint = activeView === 'overview' || activeView === 'favorites';
 
   const handleViewChange = (view) => {
     setActiveView(view);
-    if (view === 'overview') {
-      setActiveCategory('All');
-      setActiveTags([]);
-    }
     setMobileNavOpen(false);
-  };
-
-  const handleCategoryChange = (category) => {
-    setActiveCategory(category);
-    setActiveTags([]);
-    setActiveView('overview');
-    setMobileNavOpen(false);
-  };
-
-  const toggleTag = (tag) => {
-    setActiveTags((current) =>
-      current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag],
-    );
-    setActiveView('overview');
   };
 
   const clearFilters = () => {
     setQuery('');
-    setActiveCategory('All');
-    setActiveTags([]);
   };
 
   return (
     <div className="min-h-screen bg-ink-50 text-ink-900 transition-colors dark:bg-ink-950 dark:text-ink-50">
       <div className="flex min-h-screen">
-        <Sidebar
-          activeView={activeView}
-          activeCategory={activeCategory}
-          categories={categories}
-          views={views}
-          onViewChange={handleViewChange}
-          onCategoryChange={handleCategoryChange}
-        />
+        <Sidebar activeView={activeView} views={views} onViewChange={handleViewChange} />
 
         {mobileNavOpen ? (
           <div className="fixed inset-0 z-50 lg:hidden">
@@ -161,15 +125,7 @@ function App() {
                   <X size={18} />
                 </button>
               </div>
-              <Sidebar
-                activeView={activeView}
-                activeCategory={activeCategory}
-                categories={categories}
-                mobile
-                views={views}
-                onViewChange={handleViewChange}
-                onCategoryChange={handleCategoryChange}
-              />
+              <Sidebar mobile activeView={activeView} views={views} onViewChange={handleViewChange} />
             </aside>
           </div>
         ) : null}
@@ -189,35 +145,22 @@ function App() {
                   </button>
                   <div className="min-w-0 flex-1">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-sap-700 dark:text-sap-300 sm:text-xs sm:tracking-[0.12em]">
-                      {showingCategoryPage ? 'Category templates' : currentPage.eyebrow}
+                      {currentPage.eyebrow}
                     </p>
                     <h1 className="truncate text-lg font-semibold text-sap-900 dark:text-sap-100 sm:text-2xl">
-                      {showingCategoryPage ? activeCategory : currentPage.title}
+                      {currentPage.title}
                     </h1>
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  {showPrint ? (
-                    <button
-                      aria-label="Print cheatsheets"
-                      className="icon-button hidden print:hidden sm:inline-flex"
-                      onClick={() => window.print()}
-                      type="button"
-                      title="Print cheatsheets"
-                    >
-                      <Printer size={18} />
-                    </button>
-                  ) : null}
-                  <button
-                    aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                    className="icon-button"
-                    onClick={() => setDarkMode(!darkMode)}
-                    type="button"
-                    title={darkMode ? 'Light mode' : 'Dark mode'}
-                  >
-                    {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-                  </button>
-                </div>
+                <button
+                  aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                  className="icon-button"
+                  onClick={() => setDarkMode(!darkMode)}
+                  type="button"
+                  title={darkMode ? 'Light mode' : 'Dark mode'}
+                >
+                  {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+                </button>
               </div>
               {showSearch ? <SearchBar query={query} onQueryChange={setQuery} /> : null}
             </div>
@@ -225,9 +168,8 @@ function App() {
 
           <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
             {showingOverviewHome ? (
-              <section className="print-hidden mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <section className="mb-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 <HeaderStat label="Cheatsheet templates" value={cheatsheets.length} />
-                <HeaderStat label="Placeholder categories" value={categories.length} />
                 <HeaderStat label="Tag filters" value={tags.length} />
                 <HeaderStat label="Saved favorites" value={validFavoriteCount} />
               </section>
@@ -246,42 +188,13 @@ function App() {
               />
             ) : null}
 
-            {showingOverviewHome ? (
-              <>
-                <FilterChips
-                  activeCategory={activeCategory}
-                  activeTags={activeTags}
-                  categories={categories}
-                  tags={tags}
-                  onCategoryChange={setActiveCategory}
-                  onClear={clearFilters}
-                  onToggleTag={toggleTag}
-                />
-              </>
-            ) : null}
-
-            {showingOverviewHome ? (
-              <section className="mb-6 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {categories.map((category) => (
-                  <CategoryPlaceholder category={category} key={category.name} onSelect={handleCategoryChange} />
-                ))}
-              </section>
-            ) : null}
-
-            {showingCategoryPage && selectedCategory ? (
-              <section className="mb-6">
-                <CategoryPlaceholder category={selectedCategory} />
-              </section>
-            ) : null}
-
             {activeView === 'overview' || activeView === 'favorites' ? (
               <>
                 {!showingOverviewHome ? (
                   <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
                     <p className="text-sm text-ink-600 dark:text-ink-300">
-                      {activeCategory === 'All' ? 'Showing' : `Showing ${activeCategory}`}{' '}
-                      <span className="font-semibold text-ink-950 dark:text-white">{visibleCheatsheets.length}</span>{' '}
-                      templates
+                      Showing <span className="font-semibold text-ink-950 dark:text-white">{visibleCheatsheets.length}</span>{' '}
+                      entries
                     </p>
                   </div>
                 ) : null}
@@ -294,11 +207,11 @@ function App() {
                         key={sheet.id}
                         sheet={sheet}
                         onToggleFavorite={() => toggleFavorite(sheet.id)}
-                        onToggleTag={toggleTag}
+                        onToggleTag={() => {}}
                       />
                     ))}
                   </section>
-                ) : !showingOverviewHome && !showingCategoryPage ? (
+                ) : !showingOverviewHome ? (
                   <EmptyState onClear={clearFilters} />
                 ) : null}
               </>
